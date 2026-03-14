@@ -1,0 +1,935 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>【店長会議】議事録ビルダー v2.0</title>
+
+  <!-- App Settings -->
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="【店長会議用】議事録ビルダー">
+  <meta name="application-name" content="【店長会議用】議事録ビルダー">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="theme-color" content="#e74c3c">
+
+  <!-- アイコン: 赤色 -->
+  <link rel="icon" type="image/svg+xml"
+    href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='20' fill='%23e74c3c'/%3E%3Ctext x='50' y='70' font-size='60' text-anchor='middle' fill='white'%3E%F0%9F%8E%99%EF%B8%8F%3C/text%3E%3C/svg%3E">
+  <link rel="apple-touch-icon"
+    href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='20' fill='%23e74c3c'/%3E%3Ctext x='50' y='70' font-size='60' text-anchor='middle' fill='white'%3E%F0%9F%8E%99%EF%B8%8F%3C/text%3E%3C/svg%3E">
+
+  <style>
+    /* --- Theme Definitions with CSS Variables --- */
+    :root {
+      --primary-color: #27ae60;
+      --accent-color: #c0392b;
+      --bg-color: #f4f4f4;
+      --text-color: #333;
+      --panel-bg: white;
+      --border-radius: 12px;
+    }
+
+    body.theme-division {
+      --primary-color: #2c3e50;
+      --accent-color: #8e44ad;
+      --bg-color: #dfe6e9;
+      --panel-bg: #fdfefe;
+    }
+
+    body.theme-department {
+      --primary-color: #ba4a00;
+      --accent-color: #d35400;
+      --bg-color: #fcefe6;
+      --panel-bg: #ffffff;
+    }
+
+    body.theme-general {
+      --primary-color: #00796b;
+      --accent-color: #00acc1;
+      --bg-color: #e0f7fa;
+      --panel-bg: #ffffff;
+    }
+
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      padding: 15px;
+      background: var(--bg-color);
+      color: var(--text-color);
+      transition: background 0.5s ease;
+    }
+
+    .container {
+      background: var(--panel-bg);
+      padding: 20px;
+      border-radius: var(--border-radius);
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+      max-width: 500px;
+      margin: 0 auto;
+      border-top: 5px solid var(--primary-color);
+      transition: border-top 0.5s ease;
+    }
+
+    h3 {
+      margin-top: 0;
+      color: var(--accent-color);
+      text-align: center;
+      font-size: 1.2em;
+    }
+
+    .tabs {
+      display: flex;
+      border-bottom: 2px solid #ddd;
+      margin-bottom: 20px;
+    }
+
+    .tab {
+      flex: 1;
+      padding: 10px;
+      text-align: center;
+      cursor: pointer;
+      font-weight: bold;
+      color: #7f8c8d;
+      border-bottom: 2px solid transparent;
+      transition: color 0.3s;
+    }
+
+    .tab.active {
+      color: var(--primary-color);
+      border-bottom-color: var(--primary-color);
+    }
+
+    .mode-content { display: none; }
+    .mode-content.active { display: block; }
+
+    .control-panel {
+      padding: 15px;
+      background: #fdfefe;
+      border: 1px solid #bdc3c7;
+      border-radius: 8px;
+      margin-bottom: 15px;
+    }
+
+    label {
+      display: block;
+      font-weight: bold;
+      margin-bottom: 5px;
+      color: var(--primary-color);
+      font-size: 0.9em;
+    }
+
+    textarea {
+      width: 100%;
+      height: 100px;
+      padding: 8px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      box-sizing: border-box;
+      resize: vertical;
+      background: #fafafa;
+    }
+
+    .file-upload-wrapper { margin: 10px 0; }
+
+    .pdf-note {
+      font-size: 0.8em;
+      color: var(--accent-color);
+      background: rgba(255, 255, 255, 0.8);
+      border: 1px solid var(--accent-color);
+      padding: 5px;
+      border-radius: 4px;
+      margin-bottom: 5px;
+    }
+
+    .btn-group {
+      display: flex;
+      gap: 10px;
+      margin-top: 15px;
+    }
+
+    button {
+      flex: 1;
+      padding: 12px;
+      border: none;
+      border-radius: 6px;
+      font-weight: bold;
+      cursor: pointer;
+      color: white;
+      transition: 0.2s;
+    }
+
+    button:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    #createBtn { background: #3498db; width: 100%; margin-bottom: 10px; }
+    #startBtn  { background: var(--accent-color); }
+    #splitBtn  { background: var(--primary-color); }
+    #stopBtn   { background: #7f8c8d; }
+    #analyzeBtn { background: var(--primary-color); width: 100%; }
+
+    .status-panel {
+      background: #ecf0f1;
+      padding: 10px;
+      border-radius: 8px;
+      border-left: 5px solid var(--primary-color);
+    }
+
+    #upload-log {
+      font-size: 0.85em;
+      max-height: 120px;
+      overflow-y: auto;
+      margin-top: 10px;
+      border-top: 1px solid #ddd;
+      padding-top: 5px;
+    }
+
+    .log-success { color: green; }
+    .log-error   { color: red; }
+
+    .file-link {
+      margin-top: 5px;
+      padding: 8px;
+      background: #e8f6f3;
+      border: 1px solid #a2d9ce;
+      border-radius: 4px;
+      display: block;
+      font-size: 0.9em;
+    }
+
+    .file-link a {
+      color: #16a085;
+      text-decoration: none;
+      font-weight: bold;
+    }
+
+    .install-guide { text-align: center; margin-bottom: 15px; }
+
+    .install-btn {
+      background: none;
+      border: 1px solid #95a5a6;
+      color: #7f8c8d;
+      padding: 5px 10px;
+      font-size: 0.8em;
+      border-radius: 15px;
+    }
+
+    #installModal {
+      display: none;
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      background: rgba(0, 0, 0, 0.5);
+      align-items: center;
+      justify-content: center;
+      z-index: 999;
+    }
+
+    .modal-content {
+      background: white;
+      padding: 20px;
+      border-radius: 10px;
+      max-width: 80%;
+    }
+
+    /* Checklist Styles */
+    #checklist-container {
+      display: none;
+      background: #e0f7fa;
+      border: 1px solid #00acc1;
+      border-radius: 8px;
+      padding: 10px;
+      margin-top: 15px;
+    }
+
+    #checklist-container h4 {
+      margin: 0 0 10px 0;
+      color: #00796b;
+      font-size: 1em;
+      border-bottom: 1px dashed #00acc1;
+      padding-bottom: 5px;
+    }
+
+    .checklist-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 5px;
+    }
+
+    .check-item {
+      font-size: 0.85em;
+      color: #00695c;
+      display: flex;
+      align-items: center;
+    }
+
+    .check-item input {
+      margin-right: 5px;
+      accent-color: #00796b;
+    }
+
+    /* Loading Overlay */
+    #loading-overlay {
+      display: none;
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      background: rgba(255, 255, 255, 0.8);
+      z-index: 10000;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+    }
+
+    .spinner {
+      width: 50px;
+      height: 50px;
+      border: 5px solid #f3f3f3;
+      border-top: 5px solid var(--primary-color);
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      margin-bottom: 10px;
+    }
+
+    @keyframes spin {
+      0%   { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    .loading-text {
+      color: var(--primary-color);
+      font-weight: bold;
+      font-size: 1.1em;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="container">
+    <h3 id="app-title">🔴 【店長会議】議事録ビルダー</h3>
+    <div class="install-guide">
+      <button class="install-btn" onclick="openModal()">📲 アプリ保存方法</button>
+      <div style="font-size: 0.7em; color: #95a5a6; margin-top: 5px;">System Version: v2.0 (GitHub Pages)</div>
+    </div>
+
+    <!-- Tabs -->
+    <div class="tabs">
+      <div class="tab active" onclick="switchTab('record')">🔴 録音モード</div>
+      <div class="tab" onclick="switchTab('analyze')">📝 議事録アーカイブ分析</div>
+    </div>
+
+    <!-- Mode 1: Recording -->
+    <div id="mode-record" class="mode-content active">
+      <div class="input-group">
+        <label for="meeting-type-select">会議の種類:</label>
+        <select id="meeting-type-select" onchange="updateTheme(this.value)"
+          style="width:100%; padding:8px; margin-bottom:10px; border-radius:4px; border:1px solid #ddd;">
+          <option value="store_manager">店長会議</option>
+          <option value="division">店舗事業部会議</option>
+          <option value="department">部門担当者会議</option>
+          <option value="general">汎用打合せ</option>
+        </select>
+      </div>
+
+      <div class="input-group">
+        <label for="agenda-input-record">本日の次第 (任意):</label>
+        <div class="file-upload-wrapper">
+          <input type="file" id="agenda-file-record" accept=".pdf,.docx,.xlsx">
+          <span id="agenda-status-record"></span>
+        </div>
+        <div class="pdf-note">⚠️ 今日の会議の次第を読み込むと、AIが担当者や議題を正確に認識します。</div>
+        <textarea id="agenda-input-record" placeholder="ここに本日の次第が表示されます..."></textarea>
+
+        <div class="btn-group">
+          <button id="createBtn" style="flex:2">📄 ① ファイル新規作成</button>
+          <button id="resumeBtn" style="background:#f39c12; flex:1">🔄 続きから再開</button>
+        </div>
+
+        <div id="current-doc-info"
+          style="margin-top:10px; font-size:0.8em; color:#2c3e50; font-weight:bold; display:none;">
+          📍 記録先: <span id="doc-name-display">未設定</span>
+        </div>
+
+        <div id="links-container">
+          <div class="file-link"><span style="color:#555">📝:</span> <a id="min-link" target="_blank">準備中...</a></div>
+          <div class="file-link"><span style="color:#555">🗣:</span> <a id="tra-link" target="_blank">準備中...</a></div>
+        </div>
+
+        <!-- Checklist UI -->
+        <div id="checklist-container">
+          <h4>✅ 聞き取りフレームワーク (AI判定)</h4>
+          <div class="checklist-grid">
+            <div class="check-item"><input type="checkbox" id="chk-goal" disabled> 冒頭: ゴールの確認</div>
+            <div class="check-item"><input type="checkbox" id="chk-status" disabled> 冒頭: 前回ステータス</div>
+            <div class="check-item"><input type="checkbox" id="chk-proscons" disabled> 中盤: メリット/デメリット</div>
+            <div class="check-item"><input type="checkbox" id="chk-constraints" disabled> 中盤: 制約条件・コスト</div>
+            <div class="check-item"><input type="checkbox" id="chk-decision" disabled> 中盤: 意思決定者の発言</div>
+            <div class="check-item"><input type="checkbox" id="chk-schedule" disabled> 終盤: 次回日程</div>
+            <div class="check-item"><input type="checkbox" id="chk-deadline" disabled> 終盤: 期限・条件</div>
+            <div class="check-item"><input type="checkbox" id="chk-concrete" disabled> 終盤: 具体化(5W1H)</div>
+          </div>
+        </div>
+
+        <div class="btn-group">
+          <button id="startBtn" disabled>🔴 録音開始</button>
+          <button id="splitBtn" disabled>♻️ 区切る</button>
+          <button id="stopBtn" disabled>⏹️ 終了</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Mode 2: Past Analysis -->
+    <div id="mode-analyze" class="mode-content">
+      <div class="control-panel" style="border-color: #8e44ad;">
+        <label style="color: #8e44ad;">📂 ① 分析する過去の議事録</label>
+        <div class="pdf-note" style="color:#8e44ad; background:#f5eef8; border-color:#e8daef;">
+          分析したい過去の議事録ファイル(Word等)をアップロードしてください。<br>
+          <strong id="analysis-description">店長会議向けに「実行」と「期限」を厳しくチェックします。</strong>
+        </div>
+        <div class="file-upload-wrapper">
+          <input type="file" id="past-file" accept=".pdf,.docx,.txt">
+        </div>
+        <textarea id="past-text" placeholder="ここに議事録のテキストを貼り付けることも可能です..."
+          style="height: 100px; display:none;"></textarea>
+
+        <hr style="border: 0; border-top: 1px dashed #bdc3c7; margin: 15px 0;">
+
+        <label style="color: #2980b9;">📋 ② 当時の次第 (参照用・任意)</label>
+        <div class="pdf-note" style="color:#2980b9; background:#eaf2f8; border-color:#d6eaf8;">
+          当時の「次第」もあれば、正確な比較分析が可能です。
+        </div>
+        <div class="file-upload-wrapper">
+          <input type="file" id="agenda-file-analyze" accept=".pdf,.docx,.xlsx">
+          <span id="agenda-status-analyze"></span>
+        </div>
+        <textarea id="agenda-input-analyze" placeholder="ここに当時の次第が表示されます..."></textarea>
+
+        <button id="analyzeBtn" style="margin-top:15px;">⚡ 分析してレポート作成</button>
+
+        <div id="analyze-link-container" class="file-link" style="background:#f5eef8; border-color:#d7bde2;">
+          <span style="color:#8e44ad">📊 レポート:</span>
+          <a id="analyzed-link" target="_blank" style="color:#8e44ad">作成待ち...</a>
+        </div>
+      </div>
+    </div>
+
+    <div class="status-panel">
+      <div id="timer-display" style="text-align:center; font-family:monospace; font-size:1.2em; margin-bottom:5px;">--:--</div>
+      <div id="upload-log"></div>
+    </div>
+
+    <!-- Loading Overlay -->
+    <div id="loading-overlay">
+      <div class="spinner"></div>
+      <div class="loading-text" id="loading-msg">AIが解析中...</div>
+    </div>
+  </div>
+
+  <!-- Modal -->
+  <div id="installModal">
+    <div class="modal-content">
+      <span style="float:right; cursor:pointer; font-size:1.5em;" onclick="closeModal()">&times;</span>
+      <h4>📱 ホーム画面追加</h4>
+      <p><strong>iPhone:</strong> 共有アイコン <span style="font-size:1.2em">↥</span> →「ホーム画面に追加」</p>
+      <p><strong>Android:</strong> メニュー「︙」→「ホーム画面に追加」</p>
+      <p><strong>PC:</strong> メニュー「︙」→「保存して共有」→「ショートカット作成」</p>
+    </div>
+  </div>
+
+  <script>
+    // ============================================================
+    // ★ここを自分のGASデプロイURLに書き換えてください★
+    // ============================================================
+    const GAS_URL = 'YOUR_GAS_DEPLOYMENT_URL';
+    // 例: 'https://script.google.com/macros/s/AKfycbx.../exec'
+    // ============================================================
+
+    // ===== GAS通信ヘルパー (fetch版) =====
+    // Content-Type: text/plain を使うことでCORSプリフライトを回避
+    async function callGAS(action, params = {}) {
+      const payload = { action, ...params };
+      const res = await fetch(GAS_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'text/plain;charset=UTF-8' },
+        body: JSON.stringify(payload),
+        redirect: 'follow'
+      });
+      if (!res.ok) throw new Error('HTTP ' + res.status);
+      const json = await res.json();
+      if (json && json.error) throw new Error(json.error);
+      return json;
+    }
+
+    // ===== ファイル→Base64変換ヘルパー =====
+    function fileToBase64(file) {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = e => resolve(e.target.result.split(',')[1]);
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+      });
+    }
+
+    function blobToBase64(blob) {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = e => resolve(e.target.result.split(',')[1]);
+        reader.onerror = reject;
+        reader.readAsDataURL(blob);
+      });
+    }
+
+    // ===== iOS対応: 録音MIMEタイプを動的検出 =====
+    // iOS Safariは audio/mp4 のみサポート。Chromeは audio/webm
+    function getSupportedAudioMimeType() {
+      const candidates = [
+        'audio/mp4',              // iOS Safari 14.3+
+        'audio/aac',              // iOS fallback
+        'audio/webm;codecs=opus', // Chrome / Firefox
+        'audio/webm',             // Chrome fallback
+        'audio/ogg;codecs=opus',  // Firefox
+      ];
+      return candidates.find(t => MediaRecorder.isTypeSupported(t)) || '';
+    }
+
+    // ===== ユーティリティ =====
+    function log(msg, type = 'normal') {
+      const d = document.createElement('div');
+      d.innerText = `[${new Date().toLocaleTimeString()}] ${msg}`;
+      if (type === 'success') d.style.color = 'green';
+      if (type === 'error')   d.style.color = 'red';
+      document.getElementById('upload-log').prepend(d);
+    }
+
+    function showLoading(msg) {
+      document.getElementById('loading-msg').innerText = msg || '処理中...';
+      document.getElementById('loading-overlay').style.display = 'flex';
+    }
+
+    function hideLoading() {
+      document.getElementById('loading-overlay').style.display = 'none';
+    }
+
+    function openModal()  { document.getElementById('installModal').style.display = 'flex'; }
+    function closeModal() { document.getElementById('installModal').style.display = 'none'; }
+
+    // ===== タブ切り替え =====
+    function switchTab(mode) {
+      document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+      document.querySelectorAll('.mode-content').forEach(c => c.classList.remove('active'));
+
+      if (mode === 'record') {
+        document.querySelector('.tab:nth-child(1)').classList.add('active');
+        document.getElementById('mode-record').classList.add('active');
+      } else {
+        document.querySelector('.tab:nth-child(2)').classList.add('active');
+        document.getElementById('mode-analyze').classList.add('active');
+      }
+    }
+
+    // ===== テーマ管理 =====
+    function updateTheme(type) {
+      document.body.className = '';
+      const clContainer = document.getElementById('checklist-container');
+      if (clContainer) clContainer.style.display = 'none';
+
+      if (type === 'store_manager') {
+        document.body.classList.add('theme-store');
+        updateAppTitle('🔴 【店長会議】議事録ビルダー');
+      } else if (type === 'division') {
+        document.body.classList.add('theme-division');
+        updateAppTitle('⚠️ 【店舗事業部会議】議事録ビルダー');
+      } else if (type === 'department') {
+        document.body.classList.add('theme-department');
+        updateAppTitle('🟠 【部門担当者会議】議事録ビルダー');
+      } else if (type === 'general') {
+        document.body.classList.add('theme-general');
+        updateAppTitle('🔵 【汎用打合せ/報告書】議事録ビルダー');
+        if (clContainer) clContainer.style.display = 'block';
+      }
+
+      const descEl = document.getElementById('analysis-description');
+      if (descEl) {
+        const desc = {
+          store_manager: '店長会議向けに「実行」と「期限」を厳しくチェックします。',
+          division:      '店舗事業部会議向けに「経営視点」で厳しくチェックします。',
+          department:    '部門担当者会議向けに「具体的アクション」をチェックします。',
+          general:       '汎用会議として「決定事項の明確化」をチェックします。'
+        };
+        descEl.innerHTML = desc[type] || '';
+      }
+    }
+
+    function updateAppTitle(text) {
+      const el = document.getElementById('app-title');
+      if (el) el.innerText = text;
+    }
+
+    // ===== 次第ローダー (非同期版) =====
+    function setupAgendaLoader(inputId, statusId, outputId) {
+      document.getElementById(inputId).onchange = async (e) => {
+        const f = e.target.files[0];
+        if (!f) return;
+
+        showLoading('次第ファイルを解析しています...');
+        document.getElementById(statusId).innerText = '⌛';
+
+        try {
+          const base64 = await fileToBase64(f);
+          const text = await callGAS('parseAgendaFile', {
+            base64Data: base64,
+            mimeType: f.type,
+            fileName: f.name
+          });
+          document.getElementById(outputId).value = text;
+          document.getElementById(statusId).innerText = '✅';
+          hideLoading();
+          log(`次第読み取り完了: ${f.name}`, 'success');
+        } catch (err) {
+          document.getElementById(statusId).innerText = '❌';
+          hideLoading();
+          alert('次第読み取りエラー: ' + err.message);
+          log(`次第読み取り失敗: ${err.message}`, 'error');
+        }
+      };
+    }
+
+    // ===== ファイル新規作成 =====
+    async function triggerCreateNew() {
+      const btn = document.getElementById('createBtn');
+      btn.disabled = true;
+      const agendaText   = document.getElementById('agenda-input-record').value;
+      const meetingType  = document.getElementById('meeting-type-select').value;
+
+      showLoading('新規議事録を作成中...');
+
+      try {
+        const res = await callGAS('createNewMinuteDoc', { agendaText, meetingType });
+        setMeetingFiles(res);
+        btn.innerText = '✅ 作成完了';
+        hideLoading();
+        log('新規ファイル作成完了', 'success');
+      } catch (err) {
+        hideLoading();
+        btn.disabled = false;
+        alert('ファイル作成失敗: ' + err.message);
+        log('ファイル作成失敗: ' + err.message, 'error');
+      }
+    }
+
+    // ===== ファイルセット =====
+    function setMeetingFiles(res) {
+      minId = res.minutesId;
+      traId = res.transcriptId;
+      document.getElementById('doc-name-display').innerText = res.minutesName;
+      document.getElementById('current-doc-info').style.display = 'block';
+
+      const minLink = document.getElementById('min-link');
+      minLink.href    = res.minutesUrl;
+      minLink.innerText = '📝 議事録を開く';
+
+      const traLink = document.getElementById('tra-link');
+      traLink.href    = res.transcriptUrl;
+      traLink.innerText = '🗣 文字起こし原本を開く';
+
+      document.getElementById('links-container').style.display = 'block';
+      document.getElementById('startBtn').disabled = false;
+    }
+
+    // ===== 再開ボタン =====
+    async function handleResumeClick() {
+      showLoading('直近のファイルを検索中...');
+
+      try {
+        const res = await callGAS('getRecentMinuteDocs', {});
+        hideLoading();
+
+        if (Array.isArray(res) && res.length > 0) {
+          if (res.length === 1) {
+            if (confirm(`以下のファイルから再開しますか？\n\n${res[0].minutesName}`)) {
+              setMeetingFiles(res[0]);
+              log('記録を再開しました', 'success');
+            }
+          } else {
+            showFileSelectionModal(res);
+          }
+        } else {
+          showLoading('直近のファイルが見つかりませんでした。新規作成します...');
+          await triggerCreateNew();
+        }
+      } catch (err) {
+        hideLoading();
+        alert('再開エラー: ' + err.message);
+        log('再開エラー: ' + err.message, 'error');
+      }
+    }
+
+    // ===== ファイル選択モーダル =====
+    function showFileSelectionModal(candidates) {
+      const overlay = document.createElement('div');
+      overlay.id = 'file-select-overlay';
+      overlay.style.cssText = `
+        position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+        background: rgba(0,0,0,0.5); display: flex; justify-content: center;
+        align-items: center; z-index: 2000;
+      `;
+
+      const modal = document.createElement('div');
+      modal.style.cssText = `
+        background: white; padding: 20px; border-radius: 8px; width: 90%; max-width: 500px;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+      `;
+
+      const title = document.createElement('h3');
+      title.innerText = '再開するファイルを選択してください';
+      title.style.marginTop = '0';
+      modal.appendChild(title);
+
+      const list = document.createElement('ul');
+      list.style.cssText = 'list-style: none; padding: 0; margin: 15px 0; max-height: 300px; overflow-y: auto;';
+
+      candidates.forEach(c => {
+        const li = document.createElement('li');
+        li.style.cssText = 'padding: 15px; border-bottom: 1px solid #eee; cursor: pointer; display: flex; justify-content: space-between; align-items: center; transition: background 0.2s;';
+        li.onmouseover = () => li.style.background = '#f9f9f9';
+        li.onmouseout  = () => li.style.background = 'white';
+        li.innerHTML = `
+          <div style="width:100%">
+            <div style="font-weight:bold; font-size:16px; color:#2c3e50;">${c.minutesName}</div>
+            <div style="font-size:12px; color:#7f8c8d; margin-top:4px;">更新: ${c.lastUpdated}</div>
+          </div>
+          <div style="color:#3498db; font-size:1.5em; font-weight:bold;">›</div>
+        `;
+        li.onclick = () => {
+          document.body.removeChild(overlay);
+          if (confirm(`${c.minutesName} から再開しますか？`)) {
+            setMeetingFiles(c);
+            log('記録を再開しました', 'success');
+          }
+        };
+        list.appendChild(li);
+      });
+      modal.appendChild(list);
+
+      const closeBtn = document.createElement('button');
+      closeBtn.innerText = 'キャンセル（新規作成へ）';
+      closeBtn.style.cssText = 'width: 100%; padding: 10px; background: #6c757d; color: white; border: none; border-radius: 4px; cursor: pointer;';
+      closeBtn.onclick = async () => {
+        document.body.removeChild(overlay);
+        if (confirm('直近のファイルを使用せずに、新規作成しますか？')) {
+          await triggerCreateNew();
+        }
+      };
+      modal.appendChild(closeBtn);
+
+      overlay.appendChild(modal);
+      document.body.appendChild(overlay);
+    }
+
+    // ===== 録音 =====
+    let mediaRecorder, audioChunks = [], timerInterval, autoSplitTimer, partCount = 1;
+    let minId, traId, recordingMimeType = '', shouldRestart = false;
+    const AUTO_SEND_MS = 9.5 * 60 * 1000;
+
+    async function startRecording() {
+      if (!minId) return alert('先にファイルを作成してください');
+
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+
+        // iOS対応: サポートされているMIMEタイプを動的に選択
+        recordingMimeType = getSupportedAudioMimeType();
+        const options = recordingMimeType ? { mimeType: recordingMimeType } : {};
+        mediaRecorder = new MediaRecorder(stream, options);
+
+        mediaRecorder.ondataavailable = e => { if (e.data.size > 0) audioChunks.push(e.data); };
+        mediaRecorder.onstop = handleStop;
+        mediaRecorder.start();
+
+        startTimer();
+        document.getElementById('startBtn').disabled = true;
+        document.getElementById('splitBtn').disabled = false;
+        document.getElementById('stopBtn').disabled  = false;
+        log(`録音開始 (${recordingMimeType || 'default'})`, 'success');
+
+        autoSplitTimer = setTimeout(() => { log('自動分割送信'); triggerSplit(); }, AUTO_SEND_MS);
+
+      } catch (err) {
+        alert('マイクへのアクセスに失敗しました:\n' + err.message);
+        log('マイクエラー: ' + err.message, 'error');
+      }
+    }
+
+    function stopRecording() {
+      shouldRestart = false;
+      if (mediaRecorder && mediaRecorder.state !== 'inactive') mediaRecorder.stop();
+    }
+
+    function triggerSplit() {
+      shouldRestart = true;
+      if (mediaRecorder && mediaRecorder.state !== 'inactive') mediaRecorder.stop();
+    }
+
+    async function handleStop() {
+      clearInterval(timerInterval);
+      clearTimeout(autoSplitTimer);
+
+      const blobType = mediaRecorder.mimeType || recordingMimeType || 'audio/webm';
+      const blob = new Blob(audioChunks, { type: blobType });
+      const p    = partCount;
+      const agenda = document.getElementById('agenda-input-record').value;
+
+      // ★録音を即座に再開してから、バックグラウンドでアップロード
+      // （アップロード完了を待たずに録音を継続させる）
+      if (shouldRestart) {
+        partCount++;
+        audioChunks = [];
+        mediaRecorder.start();
+        startTimer();
+        autoSplitTimer = setTimeout(triggerSplit, AUTO_SEND_MS);
+      } else {
+        document.getElementById('startBtn').disabled = false;
+        document.getElementById('stopBtn').disabled  = true;
+        document.getElementById('splitBtn').disabled = true;
+        log('録音終了');
+      }
+
+      // GASへのアップロード（バックグラウンド）
+      log(`Part ${p} 送信中...`);
+      blobToBase64(blob).then(base64 => {
+        return callGAS('processAudioChunk', {
+          base64Data:    base64,
+          mimeType:      blob.type,
+          partNum:       p,
+          targetDocId:   minId,
+          transcriptDocId: traId,
+          agendaText:    agenda
+        });
+      }).then(res => {
+        if (typeof res === 'object' && res.message) {
+          if (res.analysis) updateChecklist(res.analysis);
+          log(`✅ Part ${p}: ${res.message}`, 'success');
+        } else {
+          log(`✅ Part ${p} 完了`, 'success');
+        }
+        // 最後のパートのとき最終要約を生成
+        if (!shouldRestart) {
+          log('✨ 最終要約を生成中...');
+          callGAS('finalizeSummary', { targetDocId: minId })
+            .then(msg => log(`✅ まとめ更新: ${JSON.stringify(msg)}`, 'success'))
+            .catch(err => log(`⚠️ まとめ生成失敗: ${err.message}`, 'error'));
+        }
+      }).catch(err => {
+        log(`❌ Part ${p} エラー: ${err.message}`, 'error');
+      });
+    }
+
+    // ===== 過去分析 =====
+    async function runAnalysis() {
+      const fileInput  = document.getElementById('past-file');
+      const textInput  = document.getElementById('past-text').value;
+      const agendaText = document.getElementById('agenda-input-analyze').value;
+      const meetingType = document.getElementById('meeting-type-select').value;
+      const btn = document.getElementById('analyzeBtn');
+
+      if (!fileInput.files[0] && !textInput.trim()) {
+        alert('分析対象のファイル（過去の議事録）を選択してください。');
+        return;
+      }
+
+      btn.disabled = true;
+      btn.innerText = '⏳ 経営視点で分析中...';
+      log(`分析を開始しました (${meetingType})...`);
+
+      try {
+        let fileData = null;
+        if (fileInput.files[0]) {
+          const f = fileInput.files[0];
+          const base64 = await fileToBase64(f);
+          fileData = { base64, mimeType: f.type, fileName: f.name };
+        }
+
+        const res = await callGAS('analyzePastMinutes', {
+          fileData,
+          inputText: textInput,
+          agendaText,
+          meetingType
+        });
+
+        log(`✅ レポート作成完了: ${res.name}`, 'success');
+        const link = document.getElementById('analyzed-link');
+        link.href     = res.url;
+        link.innerText = res.name;
+        document.getElementById('analyze-link-container').style.display = 'block';
+      } catch (err) {
+        log(`❌ 分析エラー: ${err.message}`, 'error');
+        alert('エラー: ' + err.message);
+      } finally {
+        btn.innerText  = '⚡ 分析してレポート作成';
+        btn.disabled   = false;
+      }
+    }
+
+    // ===== タイマー =====
+    function startTimer() {
+      let start = Date.now();
+      timerInterval = setInterval(() => {
+        let s = Math.floor((Date.now() - start) / 1000);
+        let m = Math.floor(s / 60).toString().padStart(2, '0');
+        document.getElementById('timer-display').innerText =
+          `${m}:${(s % 60).toString().padStart(2, '0')} (Part ${partCount})`;
+      }, 1000);
+    }
+
+    // ===== チェックリスト更新 =====
+    function updateChecklist(data) {
+      if (!data || !data.topics) return;
+      const mapping = {
+        goal: 'chk-goal', status: 'chk-status', proscons: 'chk-proscons',
+        constraints: 'chk-constraints', decision: 'chk-decision',
+        schedule: 'chk-schedule', deadline: 'chk-deadline', concrete: 'chk-concrete'
+      };
+      data.topics.forEach(topic => {
+        const el = document.getElementById(mapping[topic]);
+        if (el) {
+          el.checked = true;
+          el.parentElement.style.fontWeight = 'bold';
+          el.parentElement.style.color = '#d35400';
+        }
+      });
+    }
+
+    // ===== 初期化 =====
+    document.addEventListener('DOMContentLoaded', () => {
+      // GAS_URLが未設定の場合は警告
+      if (GAS_URL === 'YOUR_GAS_DEPLOYMENT_URL') {
+        document.getElementById('upload-log').innerHTML =
+          '<div style="color:red;font-weight:bold;">⚠️ GAS_URLを設定してください（index.html冒頭）</div>';
+      }
+
+      showLoading('システム準備中...');
+      updateTheme('store_manager');
+
+      // ボタンイベント登録
+      document.getElementById('createBtn').onclick  = triggerCreateNew;
+      document.getElementById('resumeBtn').onclick  = handleResumeClick;
+      document.getElementById('startBtn').onclick   = startRecording;
+      document.getElementById('splitBtn').onclick   = triggerSplit;
+      document.getElementById('stopBtn').onclick    = stopRecording;
+      document.getElementById('analyzeBtn').onclick = runAnalysis;
+
+      // 次第ファイルローダー
+      setupAgendaLoader('agenda-file-record',  'agenda-status-record',  'agenda-input-record');
+      setupAgendaLoader('agenda-file-analyze', 'agenda-status-analyze', 'agenda-input-analyze');
+
+      setTimeout(() => {
+        hideLoading();
+        log('システム準備完了。録音を開始できます。', 'success');
+      }, 1500);
+    });
+  </script>
+</body>
+
+</html>
