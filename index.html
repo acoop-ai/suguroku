@@ -6,6 +6,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>【店長会議】議事録ビルダー v2.0</title>
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
 
   <!-- App Settings -->
   <meta name="apple-mobile-web-app-capable" content="yes">
@@ -271,6 +272,54 @@
       accent-color: #00796b;
     }
 
+    /* ===== Login Screen ===== */
+    #screen-login {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 80vh;
+      padding: 30px 20px;
+    }
+    #screen-login .login-box {
+      background: white;
+      border-radius: 16px;
+      padding: 36px 28px;
+      max-width: 360px;
+      width: 100%;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.12);
+      text-align: center;
+    }
+    #screen-login .login-icon { font-size: 3em; margin-bottom: 8px; }
+    #screen-login h2 { font-size: 1.2em; color: #333; margin: 0 0 6px; }
+    #screen-login .login-sub { font-size: 0.85em; color: #888; margin-bottom: 24px; }
+    #screen-login .g_id_signin { display: flex; justify-content: center; margin-bottom: 14px; }
+    #screen-login .login-note { font-size: 0.78em; color: #aaa; }
+    #login-error { color: #c0392b; font-size: 0.85em; margin-top: 10px; min-height: 20px; }
+
+    #screen-main { display: none; }
+
+    /* ユーザーバー */
+    #user-bar {
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 8px;
+      padding: 4px 0 8px;
+      font-size: 0.8em;
+      color: #555;
+    }
+    #user-bar .user-name { font-weight: bold; color: var(--primary-color); }
+    #user-bar button {
+      background: none;
+      border: 1px solid #ccc;
+      border-radius: 12px;
+      padding: 2px 10px;
+      font-size: 0.85em;
+      color: #777;
+      cursor: pointer;
+    }
+
     /* Loading Overlay */
     #loading-overlay {
       display: none;
@@ -308,7 +357,26 @@
 </head>
 
 <body>
+
+  <!-- ===== ログイン画面 ===== -->
+  <div id="screen-login">
+    <div class="login-box">
+      <div class="login-icon">🎙️</div>
+      <h2>議事録ビルダー スグロク</h2>
+      <p class="login-sub">社内Googleアカウントでログインしてください</p>
+      <div class="g_id_signin"></div>
+      <div id="login-error"></div>
+      <p class="login-note">※ 会社のGoogleワークスペースアカウント専用です</p>
+    </div>
+  </div>
+
+  <!-- ===== メイン画面 ===== -->
+  <div id="screen-main">
   <div class="container">
+    <div id="user-bar">
+      <span class="user-name" id="user-display"></span>
+      <button onclick="signOut()">サインアウト</button>
+    </div>
     <h3 id="app-title">🔴 【店長会議】議事録ビルダー</h3>
     <div class="install-guide">
       <button class="install-btn" onclick="openModal()">📲 アプリ保存方法</button>
@@ -427,6 +495,7 @@
       <div class="loading-text" id="loading-msg">AIが解析中...</div>
     </div>
   </div>
+  </div><!-- #screen-main -->
 
   <!-- Modal -->
   <div id="installModal">
@@ -441,17 +510,24 @@
 
   <script>
     // ============================================================
-    // ★ここを自分のGASデプロイURLに書き換えてください★
+    // 設定
     // ============================================================
-    const GAS_URL = 'https://script.google.com/macros/s/AKfycbydBkzoR31d29w7pGAGnVtcNidH_t02Xcz-4s1qPOcS0dlyTsqFk8TGE-EpyXS4wR0B/exec';
-    // 例: 'https://script.google.com/macros/s/AKfycbx.../exec'
+    const CONFIG = {
+      GAS_URL: 'https://script.google.com/macros/s/AKfycbydBkzoR31d29w7pGAGnVtcNidH_t02Xcz-4s1qPOcS0dlyTsqFk8TGE-EpyXS4wR0B/exec',
+      GOOGLE_CLIENT_ID: '1072945615483-74jadmaet56chvhkfh2cpt4ae9dvh140.apps.googleusercontent.com',
+      ALLOWED_DOMAINS: ['jaz-acoop.co.jp', 'acoop1.jp', 'acoop2.jp', 'acoop3.jp'],
+    };
     // ============================================================
+
+    // ===== 認証トークン =====
+    let idToken = null;
 
     // ===== GAS通信ヘルパー (fetch版) =====
     // Content-Type: text/plain を使うことでCORSプリフライトを回避
     async function callGAS(action, params = {}) {
-      const payload = { action, ...params };
-      const res = await fetch(GAS_URL, {
+      if (!idToken) throw new Error('未ログインです。ページを再読み込みしてください。');
+      const payload = { action, idToken, ...params };
+      const res = await fetch(CONFIG.GAS_URL, {
         method: 'POST',
         headers: { 'Content-Type': 'text/plain;charset=UTF-8' },
         body: JSON.stringify(payload),
@@ -462,6 +538,44 @@
       if (json && json.error) throw new Error(json.error);
       return json;
     }
+
+    // ===== Google Sign-In コールバック =====
+    window.handleCredentialResponse = async function(response) {
+      const errEl = document.getElementById('login-error');
+      errEl.textContent = '';
+      try {
+        idToken = response.credential;
+        // フロント側でドメインチェック（JWT ペイロードから）
+        const payload = JSON.parse(atob(idToken.split('.')[1]));
+        const email = payload.email || '';
+        const domain = email.split('@')[1] || '';
+        if (!CONFIG.ALLOWED_DOMAINS.includes(domain)) {
+          idToken = null;
+          errEl.textContent = '社内ドメインのアカウントでログインしてください。';
+          return;
+        }
+        // ログイン成功 → メイン画面へ切替
+        document.getElementById('user-display').textContent = email;
+        document.getElementById('screen-login').style.display = 'none';
+        document.getElementById('screen-main').style.display = 'block';
+        initApp();
+      } catch(e) {
+        idToken = null;
+        errEl.textContent = 'ログインエラー: ' + e.message;
+      }
+    };
+
+    // ===== サインアウト =====
+    window.signOut = function() {
+      if (!confirm('サインアウトしますか？')) return;
+      idToken = null;
+      document.getElementById('screen-main').style.display = 'none';
+      document.getElementById('screen-login').style.display = 'flex';
+      document.getElementById('user-display').textContent = '';
+      if (typeof google !== 'undefined' && google.accounts) {
+        google.accounts.id.disableAutoSelect();
+      }
+    };
 
     // ===== ファイル→Base64変換ヘルパー =====
     function fileToBase64(file) {
@@ -902,14 +1016,23 @@
       });
     }
 
-    // ===== 初期化 =====
-    document.addEventListener('DOMContentLoaded', () => {
-      // GAS_URLが未設定の場合は警告
-      if (GAS_URL === 'YOUR_GAS_DEPLOYMENT_URL') {
-        document.getElementById('upload-log').innerHTML =
-          '<div style="color:red;font-weight:bold;">⚠️ GAS_URLを設定してください（index.html冒頭）</div>';
+    // ===== GIS初期化 =====
+    window.addEventListener('load', function() {
+      if (typeof google !== 'undefined' && google.accounts) {
+        google.accounts.id.initialize({
+          client_id: CONFIG.GOOGLE_CLIENT_ID,
+          callback: window.handleCredentialResponse,
+          auto_select: false,
+        });
+        google.accounts.id.renderButton(
+          document.querySelector('.g_id_signin'),
+          { theme: 'outline', size: 'large', locale: 'ja' }
+        );
       }
+    });
 
+    // ===== 初期化（ログイン後に呼ばれる） =====
+    function initApp() {
       showLoading('システム準備中...');
       updateTheme('store_manager');
 
@@ -929,7 +1052,7 @@
         hideLoading();
         log('システム準備完了。録音を開始できます。', 'success');
       }, 1500);
-    });
+    }
   </script>
 </body>
 
