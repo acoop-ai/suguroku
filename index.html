@@ -1,11 +1,14 @@
 
 <!DOCTYPE html>
-<html lang="ja">
+<html>
 
 <head>
+  <!-- <base target="_top"> は GitHub Pages では削除 -->
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>【店長会議】議事録ビルダー v2.0</title>
+  <title>【店長会議】議事録ビルダー v1.8</title>
+
+  <!-- Google Sign-In (GIS) -->
   <script src="https://accounts.google.com/gsi/client" async defer></script>
 
   <!-- App Settings -->
@@ -60,6 +63,7 @@
       background: var(--bg-color);
       color: var(--text-color);
       transition: background 0.5s ease;
+      margin: 0;
     }
 
     .container {
@@ -102,8 +106,13 @@
       border-bottom-color: var(--primary-color);
     }
 
-    .mode-content { display: none; }
-    .mode-content.active { display: block; }
+    .mode-content {
+      display: none;
+    }
+
+    .mode-content.active {
+      display: block;
+    }
 
     .control-panel {
       padding: 15px;
@@ -132,7 +141,9 @@
       background: #fafafa;
     }
 
-    .file-upload-wrapper { margin: 10px 0; }
+    .file-upload-wrapper {
+      margin: 10px 0;
+    }
 
     .pdf-note {
       font-size: 0.8em;
@@ -166,11 +177,28 @@
       cursor: not-allowed;
     }
 
-    #createBtn { background: #3498db; width: 100%; margin-bottom: 10px; }
-    #startBtn  { background: var(--accent-color); }
-    #splitBtn  { background: var(--primary-color); }
-    #stopBtn   { background: #7f8c8d; }
-    #analyzeBtn { background: var(--primary-color); width: 100%; }
+    #createBtn {
+      background: #3498db;
+      width: 100%;
+      margin-bottom: 10px;
+    }
+
+    #startBtn {
+      background: var(--accent-color);
+    }
+
+    #splitBtn {
+      background: var(--primary-color);
+    }
+
+    #stopBtn {
+      background: #7f8c8d;
+    }
+
+    #analyzeBtn {
+      background: var(--primary-color);
+      width: 100%;
+    }
 
     .status-panel {
       background: #ecf0f1;
@@ -207,7 +235,10 @@
       font-weight: bold;
     }
 
-    .install-guide { text-align: center; margin-bottom: 15px; }
+    .install-guide {
+      text-align: center;
+      margin-bottom: 15px;
+    }
 
     .install-btn {
       background: none;
@@ -221,8 +252,10 @@
     #installModal {
       display: none;
       position: fixed;
-      top: 0; left: 0;
-      width: 100%; height: 100%;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
       background: rgba(0, 0, 0, 0.5);
       align-items: center;
       justify-content: center;
@@ -236,7 +269,6 @@
       max-width: 80%;
     }
 
-    /* Checklist Styles */
     #checklist-container {
       display: none;
       background: #e0f7fa;
@@ -272,61 +304,15 @@
       accent-color: #00796b;
     }
 
-    /* ===== Login Screen ===== */
-    #screen-login {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      min-height: 80vh;
-      padding: 30px 20px;
-    }
-    #screen-login .login-box {
-      background: white;
-      border-radius: 16px;
-      padding: 36px 28px;
-      max-width: 360px;
-      width: 100%;
-      box-shadow: 0 4px 20px rgba(0,0,0,0.12);
-      text-align: center;
-    }
-    #screen-login .login-icon { font-size: 3em; margin-bottom: 8px; }
-    #screen-login h2 { font-size: 1.2em; color: #333; margin: 0 0 6px; }
-    #screen-login .login-sub { font-size: 0.85em; color: #888; margin-bottom: 24px; }
-    #screen-login .g_id_signin { display: flex; justify-content: center; margin-bottom: 14px; }
-    #screen-login .login-note { font-size: 0.78em; color: #aaa; }
-    #login-error { color: #c0392b; font-size: 0.85em; margin-top: 10px; min-height: 20px; }
-
-    #screen-main { display: none; }
-
-    /* ユーザーバー */
-    #user-bar {
-      display: flex;
-      align-items: center;
-      justify-content: flex-end;
-      gap: 8px;
-      padding: 4px 0 8px;
-      font-size: 0.8em;
-      color: #555;
-    }
-    #user-bar .user-name { font-weight: bold; color: var(--primary-color); }
-    #user-bar button {
-      background: none;
-      border: 1px solid #ccc;
-      border-radius: 12px;
-      padding: 2px 10px;
-      font-size: 0.85em;
-      color: #777;
-      cursor: pointer;
-    }
-
     /* Loading Overlay */
     #loading-overlay {
       display: none;
       position: fixed;
-      top: 0; left: 0;
-      width: 100%; height: 100%;
-      background: rgba(255, 255, 255, 0.8);
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(255, 255, 255, 0.85);
       z-index: 10000;
       align-items: center;
       justify-content: center;
@@ -353,151 +339,221 @@
       font-weight: bold;
       font-size: 1.1em;
     }
+
+    /* =============================
+       ログイン画面
+       ============================= */
+    #login-screen {
+      display: flex;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: #f4f4f4;
+      z-index: 9999;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      padding: 20px;
+      box-sizing: border-box;
+    }
+
+    .login-card {
+      background: white;
+      border-radius: 16px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.12);
+      padding: 36px 28px;
+      max-width: 360px;
+      width: 100%;
+      text-align: center;
+      border-top: 5px solid #c0392b;
+    }
+
+    .login-icon {
+      font-size: 3em;
+      margin-bottom: 8px;
+    }
+
+    .login-title {
+      font-size: 1.3em;
+      font-weight: bold;
+      color: #2c3e50;
+      margin: 0 0 4px;
+    }
+
+    .login-subtitle {
+      font-size: 0.85em;
+      color: #7f8c8d;
+      margin: 0 0 24px;
+    }
+
+    #google-signin-btn {
+      display: flex;
+      justify-content: center;
+      margin-bottom: 16px;
+    }
+
+    #login-error {
+      display: none;
+      background: #fdecea;
+      border: 1px solid #e74c3c;
+      color: #c0392b;
+      font-size: 0.8em;
+      border-radius: 6px;
+      padding: 8px 12px;
+      margin-top: 8px;
+    }
+
+    .login-domains {
+      font-size: 0.75em;
+      color: #95a5a6;
+      margin-top: 16px;
+    }
   </style>
 </head>
 
 <body>
 
-  <!-- ===== ログイン画面 ===== -->
-  <div id="screen-login">
-    <div class="login-box">
+  <!-- ========== ログイン画面 ========== -->
+  <div id="login-screen">
+    <div class="login-card">
       <div class="login-icon">🎙️</div>
-      <h2>議事録ビルダー スグロク</h2>
-      <p class="login-sub">社内Googleアカウントでログインしてください</p>
-      <div class="g_id_signin"></div>
+      <p class="login-title">議事録ビルダー</p>
+      <p class="login-subtitle">社内Googleアカウントでログインしてください</p>
+      <div id="google-signin-btn"></div>
       <div id="login-error"></div>
-      <p class="login-note">※ 会社のGoogleワークスペースアカウント専用です</p>
+      <p class="login-domains">対応ドメイン: jaz-acoop.co.jp / acoop1.jp / acoop2.jp / acoop3.jp</p>
     </div>
   </div>
 
-  <!-- ===== メイン画面 ===== -->
-  <div id="screen-main">
-  <div class="container">
-    <div id="user-bar">
-      <span class="user-name" id="user-display"></span>
-      <button onclick="signOut()">サインアウト</button>
-    </div>
-    <h3 id="app-title">🔴 【店長会議】議事録ビルダー</h3>
-    <div class="install-guide">
-      <button class="install-btn" onclick="openModal()">📲 アプリ保存方法</button>
-      <div style="font-size: 0.7em; color: #95a5a6; margin-top: 5px;">System Version: v2.0 (GitHub Pages)</div>
-    </div>
-
-    <!-- Tabs -->
-    <div class="tabs">
-      <div class="tab active" onclick="switchTab('record')">🔴 録音モード</div>
-      <div class="tab" onclick="switchTab('analyze')">📝 議事録アーカイブ分析</div>
-    </div>
-
-    <!-- Mode 1: Recording -->
-    <div id="mode-record" class="mode-content active">
-      <div class="input-group">
-        <label for="meeting-type-select">会議の種類:</label>
-        <select id="meeting-type-select" onchange="updateTheme(this.value)"
-          style="width:100%; padding:8px; margin-bottom:10px; border-radius:4px; border:1px solid #ddd;">
-          <option value="store_manager">店長会議</option>
-          <option value="division">店舗事業部会議</option>
-          <option value="department">部門担当者会議</option>
-          <option value="general">汎用打合せ</option>
-        </select>
+  <!-- ========== メインアプリ（ログイン後に表示） ========== -->
+  <div id="main-app" style="display:none">
+    <div class="container">
+      <h3 id="app-title">🔴 【店長会議】議事録ビルダー</h3>
+      <div class="install-guide">
+        <button class="install-btn" onclick="openModal()">📲 アプリ保存方法</button>
+        <div style="font-size: 0.7em; color: #95a5a6; margin-top: 5px;">
+          System Version: v1.9.14 (GitHub Pages)
+          <span id="login-user-display" style="margin-left:8px; color:#27ae60;"></span>
+        </div>
       </div>
 
-      <div class="input-group">
-        <label for="agenda-input-record">本日の次第 (任意):</label>
-        <div class="file-upload-wrapper">
-          <input type="file" id="agenda-file-record" accept=".pdf,.docx,.xlsx">
-          <span id="agenda-status-record"></span>
-        </div>
-        <div class="pdf-note">⚠️ 今日の会議の次第を読み込むと、AIが担当者や議題を正確に認識します。</div>
-        <textarea id="agenda-input-record" placeholder="ここに本日の次第が表示されます..."></textarea>
+      <!-- Tabs -->
+      <div class="tabs">
+        <div class="tab active" onclick="switchTab('record')">🔴 録音モード</div>
+        <div class="tab" onclick="switchTab('analyze')">📝 議事録アーカイブ分析</div>
+      </div>
 
-        <div class="btn-group">
-          <button id="createBtn" style="flex:2">📄 ① ファイル新規作成</button>
-          <button id="resumeBtn" style="background:#f39c12; flex:1">🔄 続きから再開</button>
-        </div>
-
-        <div id="current-doc-info"
-          style="margin-top:10px; font-size:0.8em; color:#2c3e50; font-weight:bold; display:none;">
-          📍 記録先: <span id="doc-name-display">未設定</span>
-        </div>
-
-        <div id="links-container">
-          <div class="file-link"><span style="color:#555">📝:</span> <a id="min-link" target="_blank">準備中...</a></div>
-          <div class="file-link"><span style="color:#555">🗣:</span> <a id="tra-link" target="_blank">準備中...</a></div>
+      <!-- Mode 1: Recording -->
+      <div id="mode-record" class="mode-content active">
+        <div class="input-group">
+          <label for="meeting-type-select">会議の種類:</label>
+          <select id="meeting-type-select" onchange="updateTheme(this.value)"
+            style="width:100%; padding:8px; margin-bottom:10px; border-radius:4px; border:1px solid #ddd;">
+            <option value="store_manager">店長会議</option>
+            <option value="division">店舗事業部会議</option>
+            <option value="department">部門担当者会議</option>
+            <option value="general">汎用打合せ</option>
+          </select>
         </div>
 
-        <!-- Checklist UI -->
-        <div id="checklist-container">
-          <h4>✅ 聞き取りフレームワーク (AI判定)</h4>
-          <div class="checklist-grid">
-            <div class="check-item"><input type="checkbox" id="chk-goal" disabled> 冒頭: ゴールの確認</div>
-            <div class="check-item"><input type="checkbox" id="chk-status" disabled> 冒頭: 前回ステータス</div>
-            <div class="check-item"><input type="checkbox" id="chk-proscons" disabled> 中盤: メリット/デメリット</div>
-            <div class="check-item"><input type="checkbox" id="chk-constraints" disabled> 中盤: 制約条件・コスト</div>
-            <div class="check-item"><input type="checkbox" id="chk-decision" disabled> 中盤: 意思決定者の発言</div>
-            <div class="check-item"><input type="checkbox" id="chk-schedule" disabled> 終盤: 次回日程</div>
-            <div class="check-item"><input type="checkbox" id="chk-deadline" disabled> 終盤: 期限・条件</div>
-            <div class="check-item"><input type="checkbox" id="chk-concrete" disabled> 終盤: 具体化(5W1H)</div>
+        <div class="input-group">
+          <label for="agenda-input-record">本日の次第 (任意):</label>
+          <div class="file-upload-wrapper">
+            <input type="file" id="agenda-file-record" accept=".pdf,.docx,.xlsx">
+            <span id="agenda-status-record"></span>
+          </div>
+          <div class="pdf-note">⚠️ 今日の会議の次第を読み込むと、AIが担当者や議題を正確に認識します。</div>
+          <textarea id="agenda-input-record" placeholder="ここに本日の次第が表示されます..."></textarea>
+
+          <div class="btn-group">
+            <button id="createBtn" style="flex:2">📄 ① ファイル新規作成</button>
+            <button id="resumeBtn" style="background:#f39c12; flex:1">🔄 続きから再開</button>
+          </div>
+
+          <div id="current-doc-info"
+            style="margin-top:10px; font-size:0.8em; color:#2c3e50; font-weight:bold; display:none;">
+            📍 記録先: <span id="doc-name-display">未設定</span>
+          </div>
+
+          <div id="links-container">
+            <div class="file-link"><span style="color:#555">📝:</span> <a id="min-link" target="_blank">準備中...</a></div>
+            <div class="file-link"><span style="color:#555">🗣:</span> <a id="tra-link" target="_blank">準備中...</a></div>
+          </div>
+
+          <!-- Checklist UI -->
+          <div id="checklist-container">
+            <h4>✅ 聞き取りフレームワーク (AI判定)</h4>
+            <div class="checklist-grid">
+              <div class="check-item"><input type="checkbox" id="chk-goal" disabled> 冒頭: ゴールの確認</div>
+              <div class="check-item"><input type="checkbox" id="chk-status" disabled> 冒頭: 前回ステータス</div>
+              <div class="check-item"><input type="checkbox" id="chk-proscons" disabled> 中盤: メリット/デメリット</div>
+              <div class="check-item"><input type="checkbox" id="chk-constraints" disabled> 中盤: 制約条件・コスト</div>
+              <div class="check-item"><input type="checkbox" id="chk-decision" disabled> 中盤: 意思決定者の発言</div>
+              <div class="check-item"><input type="checkbox" id="chk-schedule" disabled> 終盤: 次回日程</div>
+              <div class="check-item"><input type="checkbox" id="chk-deadline" disabled> 終盤: 期限・条件</div>
+              <div class="check-item"><input type="checkbox" id="chk-concrete" disabled> 終盤: 具体化(5W1H)</div>
+            </div>
+          </div>
+
+          <div class="btn-group">
+            <button id="startBtn">🔴 録音開始</button>
+            <button id="splitBtn" disabled>♻️ 区切る</button>
+            <button id="stopBtn" disabled>⏹️ 終了</button>
           </div>
         </div>
+      </div>
 
-        <div class="btn-group">
-          <button id="startBtn" disabled>🔴 録音開始</button>
-          <button id="splitBtn" disabled>♻️ 区切る</button>
-          <button id="stopBtn" disabled>⏹️ 終了</button>
+      <!-- Mode 2: Past Analysis -->
+      <div id="mode-analyze" class="mode-content">
+        <div class="control-panel" style="border-color: #8e44ad;">
+          <label style="color: #8e44ad;">📂 ① 分析する過去の議事録</label>
+          <div class="pdf-note" style="color:#8e44ad; background:#f5eef8; border-color:#e8daef;">
+            分析したい過去の議事録ファイル(Word等)をアップロードしてください。<br>
+            <strong id="analysis-description">店長会議向けに「実行」と「期限」を厳しくチェックします。</strong>
+          </div>
+          <div class="file-upload-wrapper">
+            <input type="file" id="past-file" accept=".pdf,.docx,.txt">
+          </div>
+          <textarea id="past-text" placeholder="ここに議事録のテキストを貼り付けることも可能です..."
+            style="height: 100px; display:none;"></textarea>
+
+          <hr style="border: 0; border-top: 1px dashed #bdc3c7; margin: 15px 0;">
+
+          <label style="color: #2980b9;">📋 ② 当時の次第 (参照用・任意)</label>
+          <div class="pdf-note" style="color:#2980b9; background:#eaf2f8; border-color:#d6eaf8;">
+            当時の「次第」もあれば、正確な比較分析が可能です。
+          </div>
+          <div class="file-upload-wrapper">
+            <input type="file" id="agenda-file-analyze" accept=".pdf,.docx,.xlsx">
+            <span id="agenda-status-analyze"></span>
+          </div>
+          <textarea id="agenda-input-analyze" placeholder="ここに当時の次第が表示されます..."></textarea>
+
+          <button id="analyzeBtn" onclick="runAnalysis()" style="margin-top:15px;">⚡ 分析してレポート作成</button>
+
+          <div id="analyze-link-container" class="file-link" style="background:#f5eef8; border-color:#d7bde2;">
+            <span style="color:#8e44ad">📊 レポート:</span>
+            <a id="analyzed-link" target="_blank" style="color:#8e44ad">作成待ち...</a>
+          </div>
         </div>
       </div>
-    </div>
 
-    <!-- Mode 2: Past Analysis -->
-    <div id="mode-analyze" class="mode-content">
-      <div class="control-panel" style="border-color: #8e44ad;">
-        <label style="color: #8e44ad;">📂 ① 分析する過去の議事録</label>
-        <div class="pdf-note" style="color:#8e44ad; background:#f5eef8; border-color:#e8daef;">
-          分析したい過去の議事録ファイル(Word等)をアップロードしてください。<br>
-          <strong id="analysis-description">店長会議向けに「実行」と「期限」を厳しくチェックします。</strong>
-        </div>
-        <div class="file-upload-wrapper">
-          <input type="file" id="past-file" accept=".pdf,.docx,.txt">
-        </div>
-        <textarea id="past-text" placeholder="ここに議事録のテキストを貼り付けることも可能です..."
-          style="height: 100px; display:none;"></textarea>
-
-        <hr style="border: 0; border-top: 1px dashed #bdc3c7; margin: 15px 0;">
-
-        <label style="color: #2980b9;">📋 ② 当時の次第 (参照用・任意)</label>
-        <div class="pdf-note" style="color:#2980b9; background:#eaf2f8; border-color:#d6eaf8;">
-          当時の「次第」もあれば、正確な比較分析が可能です。
-        </div>
-        <div class="file-upload-wrapper">
-          <input type="file" id="agenda-file-analyze" accept=".pdf,.docx,.xlsx">
-          <span id="agenda-status-analyze"></span>
-        </div>
-        <textarea id="agenda-input-analyze" placeholder="ここに当時の次第が表示されます..."></textarea>
-
-        <button id="analyzeBtn" style="margin-top:15px;">⚡ 分析してレポート作成</button>
-
-        <div id="analyze-link-container" class="file-link" style="background:#f5eef8; border-color:#d7bde2;">
-          <span style="color:#8e44ad">📊 レポート:</span>
-          <a id="analyzed-link" target="_blank" style="color:#8e44ad">作成待ち...</a>
-        </div>
+      <div class="status-panel">
+        <div id="timer-display" style="text-align:center; font-family:monospace; font-size:1.2em; margin-bottom:5px;">--:--</div>
+        <div id="upload-log"></div>
       </div>
-    </div>
+    </div><!-- /.container -->
+  </div><!-- /#main-app -->
 
-    <div class="status-panel">
-      <div id="timer-display" style="text-align:center; font-family:monospace; font-size:1.2em; margin-bottom:5px;">--:--</div>
-      <div id="upload-log"></div>
-    </div>
-
-    <!-- Loading Overlay -->
-    <div id="loading-overlay">
-      <div class="spinner"></div>
-      <div class="loading-text" id="loading-msg">AIが解析中...</div>
-    </div>
+  <!-- Loading Overlay (fixed, always available) -->
+  <div id="loading-overlay">
+    <div class="spinner"></div>
+    <div class="loading-text" id="loading-msg">AIが解析中...</div>
   </div>
-  </div><!-- #screen-main -->
 
-  <!-- Modal -->
+  <!-- Install Modal -->
   <div id="installModal">
     <div class="modal-content">
       <span style="float:right; cursor:pointer; font-size:1.5em;" onclick="closeModal()">&times;</span>
@@ -510,131 +566,92 @@
 
   <script>
     // ============================================================
-    // 設定
+    //  CONFIG  ★ここを環境に合わせて書き換えてください
     // ============================================================
     const CONFIG = {
+      // GASデプロイURL（「全員公開」でデプロイしたURL）
       GAS_URL: 'https://script.google.com/macros/s/AKfycbydBkzoR31d29w7pGAGnVtcNidH_t02Xcz-4s1qPOcS0dlyTsqFk8TGE-EpyXS4wR0B/exec',
+      // Google Cloud Console の OAuthクライアントID
+      // ※ https://acoop-ai.github.io は承認済みJavaScript生成元に登録済み
       GOOGLE_CLIENT_ID: '1072945615483-74jadmaet56chvhkfh2cpt4ae9dvh140.apps.googleusercontent.com',
-      ALLOWED_DOMAINS: ['jaz-acoop.co.jp', 'acoop1.jp', 'acoop2.jp', 'acoop3.jp'],
+      // 許可するGoogleワークスペースドメイン
+      ALLOWED_DOMAINS: ['jaz-acoop.co.jp', 'acoop1.jp', 'acoop2.jp', 'acoop3.jp']
     };
+
     // ============================================================
+    //  グローバル状態
+    // ============================================================
+    let currentIdToken = null;
+    let currentUser    = null;
 
-    // ===== 認証トークン =====
-    let idToken = null;
+    // ============================================================
+    //  Google Sign-In コールバック
+    // ============================================================
+    function handleCredentialResponse(response) {
+      try {
+        // JWTペイロードをデコード（検証はGAS側で実施）
+        const payload = JSON.parse(atob(response.credential.split('.')[1]));
+        const email   = payload.email || '';
+        const domain  = email.split('@')[1] || '';
 
-    // ===== GAS通信ヘルパー (fetch版) =====
-    // Content-Type: text/plain を使うことでCORSプリフライトを回避
+        // クライアント側ドメインチェック（簡易）
+        if (!CONFIG.ALLOWED_DOMAINS.includes(domain)) {
+          const errEl = document.getElementById('login-error');
+          errEl.textContent = `社内アカウント（${CONFIG.ALLOWED_DOMAINS.join(' / ')}）でログインしてください。\n現在のアカウント: ${email}`;
+          errEl.style.display = 'block';
+          return;
+        }
+
+        currentIdToken = response.credential;
+        currentUser    = { email, name: payload.name || email };
+
+        // ログイン画面を隠してメインアプリを表示
+        document.getElementById('login-screen').style.display = 'none';
+        document.getElementById('main-app').style.display = 'block';
+
+        // ユーザー表示
+        const dispEl = document.getElementById('login-user-display');
+        if (dispEl) dispEl.textContent = '👤 ' + currentUser.email;
+
+        // システム初期化ローディング
+        showLoading('システム準備中... 音声認識AIを起動しています');
+        setTimeout(() => {
+          hideLoading();
+          log(`ログイン完了: ${currentUser.email}`, 'success');
+          log('システム準備完了。録音を開始できます。', 'success');
+        }, 2000);
+
+      } catch (err) {
+        console.error('handleCredentialResponse error:', err);
+        const errEl = document.getElementById('login-error');
+        errEl.textContent = 'ログイン処理でエラーが発生しました: ' + err.message;
+        errEl.style.display = 'block';
+      }
+    }
+
+    // ============================================================
+    //  callGAS: GAS doPost を fetch で呼び出す汎用関数
+    // ============================================================
     async function callGAS(action, params = {}) {
-      if (!idToken) throw new Error('未ログインです。ページを再読み込みしてください。');
-      const payload = { action, idToken, ...params };
-      const res = await fetch(CONFIG.GAS_URL, {
+      if (!currentIdToken) throw new Error('ログインが必要です');
+      const body = JSON.stringify({ action, idToken: currentIdToken, ...params });
+      const res  = await fetch(CONFIG.GAS_URL, {
         method: 'POST',
         headers: { 'Content-Type': 'text/plain;charset=UTF-8' },
-        body: JSON.stringify(payload),
-        redirect: 'follow'
+        body
       });
-      if (!res.ok) throw new Error('HTTP ' + res.status);
+      if (!res.ok) throw new Error('通信エラー: HTTP ' + res.status);
       const json = await res.json();
       if (json && json.error) throw new Error(json.error);
       return json;
     }
 
-    // ===== Google Sign-In コールバック =====
-    window.handleCredentialResponse = async function(response) {
-      const errEl = document.getElementById('login-error');
-      errEl.textContent = '';
-      try {
-        idToken = response.credential;
-        // フロント側でドメインチェック（JWT ペイロードから）
-        const payload = JSON.parse(atob(idToken.split('.')[1]));
-        const email = payload.email || '';
-        const domain = email.split('@')[1] || '';
-        if (!CONFIG.ALLOWED_DOMAINS.includes(domain)) {
-          idToken = null;
-          errEl.textContent = '社内ドメインのアカウントでログインしてください。';
-          return;
-        }
-        // ログイン成功 → メイン画面へ切替
-        document.getElementById('user-display').textContent = email;
-        document.getElementById('screen-login').style.display = 'none';
-        document.getElementById('screen-main').style.display = 'block';
-        initApp();
-      } catch(e) {
-        idToken = null;
-        errEl.textContent = 'ログインエラー: ' + e.message;
-      }
-    };
-
-    // ===== サインアウト =====
-    window.signOut = function() {
-      if (!confirm('サインアウトしますか？')) return;
-      idToken = null;
-      document.getElementById('screen-main').style.display = 'none';
-      document.getElementById('screen-login').style.display = 'flex';
-      document.getElementById('user-display').textContent = '';
-      if (typeof google !== 'undefined' && google.accounts) {
-        google.accounts.id.disableAutoSelect();
-      }
-    };
-
-    // ===== ファイル→Base64変換ヘルパー =====
-    function fileToBase64(file) {
-      return new Promise((resolve, reject) => {
-        const reader = new FileReader();
-        reader.onload = e => resolve(e.target.result.split(',')[1]);
-        reader.onerror = reject;
-        reader.readAsDataURL(file);
-      });
-    }
-
-    function blobToBase64(blob) {
-      return new Promise((resolve, reject) => {
-        const reader = new FileReader();
-        reader.onload = e => resolve(e.target.result.split(',')[1]);
-        reader.onerror = reject;
-        reader.readAsDataURL(blob);
-      });
-    }
-
-    // ===== iOS対応: 録音MIMEタイプを動的検出 =====
-    // iOS Safariは audio/mp4 のみサポート。Chromeは audio/webm
-    function getSupportedAudioMimeType() {
-      const candidates = [
-        'audio/mp4',              // iOS Safari 14.3+
-        'audio/aac',              // iOS fallback
-        'audio/webm;codecs=opus', // Chrome / Firefox
-        'audio/webm',             // Chrome fallback
-        'audio/ogg;codecs=opus',  // Firefox
-      ];
-      return candidates.find(t => MediaRecorder.isTypeSupported(t)) || '';
-    }
-
-    // ===== ユーティリティ =====
-    function log(msg, type = 'normal') {
-      const d = document.createElement('div');
-      d.innerText = `[${new Date().toLocaleTimeString()}] ${msg}`;
-      if (type === 'success') d.style.color = 'green';
-      if (type === 'error')   d.style.color = 'red';
-      document.getElementById('upload-log').prepend(d);
-    }
-
-    function showLoading(msg) {
-      document.getElementById('loading-msg').innerText = msg || '処理中...';
-      document.getElementById('loading-overlay').style.display = 'flex';
-    }
-
-    function hideLoading() {
-      document.getElementById('loading-overlay').style.display = 'none';
-    }
-
-    function openModal()  { document.getElementById('installModal').style.display = 'flex'; }
-    function closeModal() { document.getElementById('installModal').style.display = 'none'; }
-
-    // ===== タブ切り替え =====
+    // ============================================================
+    //  タブ切替
+    // ============================================================
     function switchTab(mode) {
       document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
       document.querySelectorAll('.mode-content').forEach(c => c.classList.remove('active'));
-
       if (mode === 'record') {
         document.querySelector('.tab:nth-child(1)').classList.add('active');
         document.getElementById('mode-record').classList.add('active');
@@ -644,144 +661,126 @@
       }
     }
 
-    // ===== テーマ管理 =====
-    function updateTheme(type) {
-      document.body.className = '';
-      const clContainer = document.getElementById('checklist-container');
-      if (clContainer) clContainer.style.display = 'none';
+    // ============================================================
+    //  共通ユーティリティ
+    // ============================================================
+    function log(msg, type = 'normal') {
+      const d = document.createElement('div');
+      d.innerText = `[${new Date().toLocaleTimeString()}] ${msg}`;
+      if (type === 'success') d.style.color = 'green';
+      if (type === 'error')   d.style.color = 'red';
+      document.getElementById('upload-log').prepend(d);
+    }
 
-      if (type === 'store_manager') {
-        document.body.classList.add('theme-store');
-        updateAppTitle('🔴 【店長会議】議事録ビルダー');
-      } else if (type === 'division') {
-        document.body.classList.add('theme-division');
-        updateAppTitle('⚠️ 【店舗事業部会議】議事録ビルダー');
-      } else if (type === 'department') {
-        document.body.classList.add('theme-department');
-        updateAppTitle('🟠 【部門担当者会議】議事録ビルダー');
-      } else if (type === 'general') {
-        document.body.classList.add('theme-general');
-        updateAppTitle('🔵 【汎用打合せ/報告書】議事録ビルダー');
-        if (clContainer) clContainer.style.display = 'block';
+    function openModal()  { document.getElementById('installModal').style.display = 'flex'; }
+    function closeModal() { document.getElementById('installModal').style.display = 'none'; }
+
+    function showLoading(msg) {
+      document.getElementById('loading-msg').innerText = msg || '処理中...';
+      document.getElementById('loading-overlay').style.display = 'flex';
+    }
+    function hideLoading() {
+      document.getElementById('loading-overlay').style.display = 'none';
+    }
+
+    // ============================================================
+    //  Mode 2: 過去議事録分析
+    // ============================================================
+    function runAnalysis() {
+      const fileInput  = document.getElementById('past-file');
+      const textInput  = document.getElementById('past-text').value;
+      const agendaText = document.getElementById('agenda-input-analyze').value;
+      const meetingType = document.getElementById('meeting-type-select').value;
+      const btn = document.getElementById('analyzeBtn');
+
+      if (!fileInput.files[0] && !textInput.trim()) {
+        alert('分析対象のファイル（過去の議事録）を選択してください。');
+        return;
       }
 
-      const descEl = document.getElementById('analysis-description');
-      if (descEl) {
-        const desc = {
-          store_manager: '店長会議向けに「実行」と「期限」を厳しくチェックします。',
-          division:      '店舗事業部会議向けに「経営視点」で厳しくチェックします。',
-          department:    '部門担当者会議向けに「具体的アクション」をチェックします。',
-          general:       '汎用会議として「決定事項の明確化」をチェックします。'
+      btn.disabled = true;
+      btn.innerText = '⏳ 経営視点で分析中...';
+      log(`分析を開始しました (${meetingType})...`, 'normal');
+
+      const process = async (fileData) => {
+        try {
+          const res = await callGAS('analyzePastMinutes', {
+            fileData,
+            inputText: textInput,
+            agendaText,
+            meetingType
+          });
+          log(`✅ レポート作成完了: ${res.name}`, 'success');
+          const link = document.getElementById('analyzed-link');
+          link.href    = res.url;
+          link.innerText = res.name;
+          document.getElementById('analyze-link-container').style.display = 'block';
+        } catch (err) {
+          log(`❌ 分析エラー: ${err.message}`, 'error');
+          alert('エラー: ' + err.message);
+        } finally {
+          btn.innerText = '⚡ 分析してレポート作成';
+          btn.disabled  = false;
+        }
+      };
+
+      if (fileInput.files[0]) {
+        const reader = new FileReader();
+        reader.onload = e => {
+          process({
+            base64:   e.target.result.split(',')[1],
+            mimeType: fileInput.files[0].type,
+            fileName: fileInput.files[0].name
+          });
         };
-        descEl.innerHTML = desc[type] || '';
+        reader.readAsDataURL(fileInput.files[0]);
+      } else {
+        process(null);
       }
     }
 
-    function updateAppTitle(text) {
-      const el = document.getElementById('app-title');
-      if (el) el.innerText = text;
-    }
-
-    // ===== 次第ローダー (非同期版) =====
+    // ============================================================
+    //  次第ファイル読み込みローダー
+    // ============================================================
     function setupAgendaLoader(inputId, statusId, outputId) {
-      document.getElementById(inputId).onchange = async (e) => {
+      document.getElementById(inputId).onchange = e => {
         const f = e.target.files[0];
         if (!f) return;
 
         showLoading('次第ファイルを解析しています...');
         document.getElementById(statusId).innerText = '⌛';
 
-        try {
-          const base64 = await fileToBase64(f);
-          const text = await callGAS('parseAgendaFile', {
-            base64Data: base64,
-            mimeType: f.type,
-            fileName: f.name
-          });
-          document.getElementById(outputId).value = text;
-          document.getElementById(statusId).innerText = '✅';
-          hideLoading();
-          log(`次第読み取り完了: ${f.name}`, 'success');
-        } catch (err) {
-          document.getElementById(statusId).innerText = '❌';
-          hideLoading();
-          alert('次第読み取りエラー: ' + err.message);
-          log(`次第読み取り失敗: ${err.message}`, 'error');
-        }
+        const r = new FileReader();
+        r.onload = async ev => {
+          try {
+            const text = await callGAS('parseAgendaFile', {
+              base64Data: ev.target.result.split(',')[1],
+              mimeType:   f.type,
+              fileName:   f.name
+            });
+            document.getElementById(outputId).value = text;
+            document.getElementById(statusId).innerText = '✅';
+            hideLoading();
+            log(`次第読み取り完了: ${f.name}`, 'success');
+          } catch (err) {
+            document.getElementById(statusId).innerText = '❌';
+            hideLoading();
+            alert('次第読み取りエラー: ' + err.message);
+            log(`次第読み取り失敗: ${err.message}`, 'error');
+          }
+        };
+        r.readAsDataURL(f);
       };
     }
 
-    // ===== ファイル新規作成 =====
-    async function triggerCreateNew() {
-      const btn = document.getElementById('createBtn');
-      btn.disabled = true;
-      const agendaText   = document.getElementById('agenda-input-record').value;
-      const meetingType  = document.getElementById('meeting-type-select').value;
+    // ============================================================
+    //  Mode 1: 録音ロジック
+    // ============================================================
+    let mediaRecorder, audioChunks = [], timerInterval, autoSplitTimer, partCount = 1;
+    let minId, traId;
+    const AUTO_SEND_MS = 9.5 * 60 * 1000;
 
-      showLoading('新規議事録を作成中...');
-
-      try {
-        const res = await callGAS('createNewMinuteDoc', { agendaText, meetingType });
-        setMeetingFiles(res);
-        btn.innerText = '✅ 作成完了';
-        hideLoading();
-        log('新規ファイル作成完了', 'success');
-      } catch (err) {
-        hideLoading();
-        btn.disabled = false;
-        alert('ファイル作成失敗: ' + err.message);
-        log('ファイル作成失敗: ' + err.message, 'error');
-      }
-    }
-
-    // ===== ファイルセット =====
-    function setMeetingFiles(res) {
-      minId = res.minutesId;
-      traId = res.transcriptId;
-      document.getElementById('doc-name-display').innerText = res.minutesName;
-      document.getElementById('current-doc-info').style.display = 'block';
-
-      const minLink = document.getElementById('min-link');
-      minLink.href    = res.minutesUrl;
-      minLink.innerText = '📝 議事録を開く';
-
-      const traLink = document.getElementById('tra-link');
-      traLink.href    = res.transcriptUrl;
-      traLink.innerText = '🗣 文字起こし原本を開く';
-
-      document.getElementById('links-container').style.display = 'block';
-      document.getElementById('startBtn').disabled = false;
-    }
-
-    // ===== 再開ボタン =====
-    async function handleResumeClick() {
-      showLoading('直近のファイルを検索中...');
-
-      try {
-        const res = await callGAS('getRecentMinuteDocs', {});
-        hideLoading();
-
-        if (Array.isArray(res) && res.length > 0) {
-          if (res.length === 1) {
-            if (confirm(`以下のファイルから再開しますか？\n\n${res[0].minutesName}`)) {
-              setMeetingFiles(res[0]);
-              log('記録を再開しました', 'success');
-            }
-          } else {
-            showFileSelectionModal(res);
-          }
-        } else {
-          showLoading('直近のファイルが見つかりませんでした。新規作成します...');
-          await triggerCreateNew();
-        }
-      } catch (err) {
-        hideLoading();
-        alert('再開エラー: ' + err.message);
-        log('再開エラー: ' + err.message, 'error');
-      }
-    }
-
-    // ===== ファイル選択モーダル =====
+    // --- ファイル選択モーダル ---
     function showFileSelectionModal(candidates) {
       const overlay = document.createElement('div');
       overlay.id = 'file-select-overlay';
@@ -794,7 +793,7 @@
       const modal = document.createElement('div');
       modal.style.cssText = `
         background: white; padding: 20px; border-radius: 8px; width: 90%; max-width: 500px;
-        box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+        box-shadow: 0 4px 10px rgba(0,0,0,0.3); font-family: sans-serif;
       `;
 
       const title = document.createElement('h3');
@@ -831,10 +830,11 @@
       const closeBtn = document.createElement('button');
       closeBtn.innerText = 'キャンセル（新規作成へ）';
       closeBtn.style.cssText = 'width: 100%; padding: 10px; background: #6c757d; color: white; border: none; border-radius: 4px; cursor: pointer;';
-      closeBtn.onclick = async () => {
+      closeBtn.onclick = () => {
         document.body.removeChild(overlay);
         if (confirm('直近のファイルを使用せずに、新規作成しますか？')) {
-          await triggerCreateNew();
+          showLoading('新規作成へ移行します...');
+          triggerCreateNew();
         }
       };
       modal.appendChild(closeBtn);
@@ -843,38 +843,181 @@
       document.body.appendChild(overlay);
     }
 
-    // ===== 録音 =====
-    let mediaRecorder, audioChunks = [], timerInterval, autoSplitTimer, partCount = 1;
-    let minId, traId, recordingMimeType = '', shouldRestart = false;
-    const AUTO_SEND_MS = 9.5 * 60 * 1000;
+    async function triggerCreateNew() {
+      const btn = document.getElementById('createBtn');
+      btn.disabled = true;
+      const agenda      = document.getElementById('agenda-input-record').value;
+      const meetingType = document.getElementById('meeting-type-select').value;
+
+      showLoading('新規議事録を作成中...');
+      try {
+        const res = await callGAS('createNewMinuteDoc', { agendaText: agenda, meetingType });
+        setMeetingFiles(res);
+        btn.innerText = '✅ 作成完了';
+        hideLoading();
+        log('新規ファイル作成完了（自動遷移）', 'success');
+      } catch (err) {
+        hideLoading();
+        btn.disabled = false;
+        alert('ファイル作成失敗: ' + err.message);
+      }
+    }
+
+    function setMeetingFiles(res) {
+      minId = res.minutesId;
+      traId = res.transcriptId;
+      document.getElementById('doc-name-display').innerText = res.minutesName;
+      document.getElementById('current-doc-info').style.display = 'block';
+
+      const minLink = document.getElementById('min-link');
+      minLink.href      = res.minutesUrl;
+      minLink.innerText = '📝 議事録を開く';
+
+      const traLink = document.getElementById('tra-link');
+      traLink.href      = res.transcriptUrl;
+      traLink.innerText = '🗣 文字起こし原本を開く';
+
+      document.getElementById('links-container').style.display = 'block';
+      document.getElementById('startBtn').disabled = false;
+    }
+
+    // ============================================================
+    //  テーマ管理
+    // ============================================================
+    function updateTheme(type) {
+      document.body.className = '';
+      const clContainer = document.getElementById('checklist-container');
+      if (clContainer) clContainer.style.display = 'none';
+
+      if (type === 'store_manager') {
+        document.body.classList.add('theme-store');
+        updateAppTitle('🔴 【店長会議】議事録ビルダー');
+      } else if (type === 'division') {
+        document.body.classList.add('theme-division');
+        updateAppTitle('⚠️ 【店舗事業部会議】議事録ビルダー');
+      } else if (type === 'department') {
+        document.body.classList.add('theme-department');
+        updateAppTitle('🟠 【部門担当者会議】議事録ビルダー');
+      } else if (type === 'general') {
+        document.body.classList.add('theme-general');
+        updateAppTitle('🔵 【汎用打合せ/報告書】議事録ビルダー');
+        if (clContainer) clContainer.style.display = 'block';
+      }
+
+      const descEl = document.getElementById('analysis-description');
+      if (descEl) {
+        const msgs = {
+          store_manager: '店長会議向けに「実行」と「期限」を厳しくチェックします。',
+          division:      '店舗事業部会議向けに「経営視点」で厳しくチェックします。',
+          department:    '部門担当者会議向けに「具体的アクション」をチェックします。',
+          general:       '汎用会議として「決定事項の明確化」をチェックします。'
+        };
+        descEl.innerHTML = msgs[type] || '';
+      }
+    }
+
+    function updateAppTitle(text) {
+      const el = document.getElementById('app-title');
+      if (el) el.innerText = text;
+    }
+
+    // ============================================================
+    //  DOMContentLoaded: ログイン画面を初期化
+    // ============================================================
+    document.addEventListener('DOMContentLoaded', () => {
+      // テーマ初期化（ログイン前でも設定）
+      updateTheme('store_manager');
+
+      // Google Sign-In ボタンを描画
+      // ※ GIS スクリプトがロードされてから実行する必要があるため
+      //   スクリプトの async/defer に合わせて少し待つ
+      const tryRender = (retries = 10) => {
+        if (window.google && google.accounts && google.accounts.id) {
+          google.accounts.id.initialize({
+            client_id:   CONFIG.GOOGLE_CLIENT_ID,
+            callback:    handleCredentialResponse,
+            auto_select: false
+          });
+          google.accounts.id.renderButton(
+            document.getElementById('google-signin-btn'),
+            { theme: 'outline', size: 'large', text: 'signin_with', locale: 'ja', width: 280 }
+          );
+        } else if (retries > 0) {
+          setTimeout(() => tryRender(retries - 1), 300);
+        }
+      };
+      tryRender();
+
+      // イベントリスナー登録（ログイン後に使う）
+      initEventListeners();
+    });
+
+    function initEventListeners() {
+      const createBtn  = document.getElementById('createBtn');
+      if (createBtn)  createBtn.onclick  = triggerCreateNew;
+
+      const resumeBtn  = document.getElementById('resumeBtn');
+      if (resumeBtn)  resumeBtn.onclick  = handleResumeClick;
+
+      const startBtn   = document.getElementById('startBtn');
+      if (startBtn)   startBtn.onclick   = startRecording;
+
+      const splitBtn   = document.getElementById('splitBtn');
+      if (splitBtn)   splitBtn.onclick   = triggerSplit;
+
+      const stopBtn    = document.getElementById('stopBtn');
+      if (stopBtn)    stopBtn.onclick    = stopRecording;
+
+      const analyzeBtn = document.getElementById('analyzeBtn');
+      if (analyzeBtn) analyzeBtn.onclick = runAnalysis;
+
+      // 次第ファイルローダーを両モードに設定
+      setupAgendaLoader('agenda-file-record',  'agenda-status-record',  'agenda-input-record');
+      setupAgendaLoader('agenda-file-analyze', 'agenda-status-analyze', 'agenda-input-analyze');
+    }
+
+    // ============================================================
+    //  イベントハンドラ
+    // ============================================================
+    async function handleResumeClick() {
+      showLoading('直近のファイルを検索中...');
+      try {
+        const res = await callGAS('getRecentMinuteDocs');
+        hideLoading();
+        if (Array.isArray(res) && res.length > 0) {
+          if (res.length === 1) {
+            if (confirm(`以下のファイルから再開しますか？\n\n${res[0].minutesName}`)) {
+              setMeetingFiles(res[0]);
+              log('記録を再開しました', 'success');
+            }
+          } else {
+            showFileSelectionModal(res);
+          }
+        } else {
+          showLoading('直近のファイルが見つかりませんでした。新規作成します...');
+          triggerCreateNew();
+        }
+      } catch (err) {
+        hideLoading();
+        alert('再開エラー: ' + err.message);
+      }
+    }
 
     async function startRecording() {
       if (!minId) return alert('先にファイルを作成してください');
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      mediaRecorder = new MediaRecorder(stream);
+      mediaRecorder.ondataavailable = e => { if (e.data.size > 0) audioChunks.push(e.data); };
+      mediaRecorder.onstop = handleStop;
+      mediaRecorder.start();
 
-      try {
-        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      startTimer();
+      document.getElementById('startBtn').disabled = true;
+      document.getElementById('splitBtn').disabled = false;
+      document.getElementById('stopBtn').disabled  = false;
+      log('録音開始', 'success');
 
-        // iOS対応: サポートされているMIMEタイプを動的に選択
-        recordingMimeType = getSupportedAudioMimeType();
-        const options = recordingMimeType ? { mimeType: recordingMimeType } : {};
-        mediaRecorder = new MediaRecorder(stream, options);
-
-        mediaRecorder.ondataavailable = e => { if (e.data.size > 0) audioChunks.push(e.data); };
-        mediaRecorder.onstop = handleStop;
-        mediaRecorder.start();
-
-        startTimer();
-        document.getElementById('startBtn').disabled = true;
-        document.getElementById('splitBtn').disabled = false;
-        document.getElementById('stopBtn').disabled  = false;
-        log(`録音開始 (${recordingMimeType || 'default'})`, 'success');
-
-        autoSplitTimer = setTimeout(() => { log('自動分割送信'); triggerSplit(); }, AUTO_SEND_MS);
-
-      } catch (err) {
-        alert('マイクへのアクセスに失敗しました:\n' + err.message);
-        log('マイクエラー: ' + err.message, 'error');
-      }
+      autoSplitTimer = setTimeout(() => { log('自動分割送信'); triggerSplit(); }, AUTO_SEND_MS);
     }
 
     function stopRecording() {
@@ -882,22 +1025,44 @@
       if (mediaRecorder && mediaRecorder.state !== 'inactive') mediaRecorder.stop();
     }
 
+    let shouldRestart = false;
     function triggerSplit() {
       shouldRestart = true;
       if (mediaRecorder && mediaRecorder.state !== 'inactive') mediaRecorder.stop();
     }
 
-    async function handleStop() {
+    function handleStop() {
       clearInterval(timerInterval);
       clearTimeout(autoSplitTimer);
 
-      const blobType = mediaRecorder.mimeType || recordingMimeType || 'audio/webm';
-      const blob = new Blob(audioChunks, { type: blobType });
-      const p    = partCount;
+      const blob   = new Blob(audioChunks, { type: 'audio/webm' });
+      const p      = partCount;
       const agenda = document.getElementById('agenda-input-record').value;
 
-      // ★録音を即座に再開してから、バックグラウンドでアップロード
-      // （アップロード完了を待たずに録音を継続させる）
+      log(`Part ${p} 送信中...`);
+      const r = new FileReader();
+      r.onload = async e => {
+        try {
+          const res = await callGAS('processAudioChunk', {
+            base64Data:      e.target.result.split(',')[1],
+            mimeType:        blob.type,
+            partNum:         p,
+            targetDocId:     minId,
+            transcriptDocId: traId,
+            agendaText:      agenda
+          });
+          if (typeof res === 'object' && res.message) {
+            if (res.analysis) updateChecklist(res.analysis);
+            log(`✅ Part ${p}: ${res.message}`, 'success');
+          } else {
+            log(`✅ Part ${p}: ${res}`, 'success');
+          }
+        } catch (err) {
+          log(`❌ Part ${p} Error: ${err.message}`, 'error');
+        }
+      };
+      r.readAsDataURL(blob);
+
       if (shouldRestart) {
         partCount++;
         audioChunks = [];
@@ -909,85 +1074,19 @@
         document.getElementById('stopBtn').disabled  = true;
         document.getElementById('splitBtn').disabled = true;
         log('録音終了');
-      }
 
-      // GASへのアップロード（バックグラウンド）
-      log(`Part ${p} 送信中...`);
-      blobToBase64(blob).then(base64 => {
-        return callGAS('processAudioChunk', {
-          base64Data:    base64,
-          mimeType:      blob.type,
-          partNum:       p,
-          targetDocId:   minId,
-          transcriptDocId: traId,
-          agendaText:    agenda
-        });
-      }).then(res => {
-        if (typeof res === 'object' && res.message) {
-          if (res.analysis) updateChecklist(res.analysis);
-          log(`✅ Part ${p}: ${res.message}`, 'success');
-        } else {
-          log(`✅ Part ${p} 完了`, 'success');
-        }
-        // 最後のパートのとき最終要約を生成
-        if (!shouldRestart) {
-          log('✨ 最終要約を生成中...');
-          callGAS('finalizeSummary', { targetDocId: minId })
-            .then(msg => log(`✅ まとめ更新: ${JSON.stringify(msg)}`, 'success'))
-            .catch(err => log(`⚠️ まとめ生成失敗: ${err.message}`, 'error'));
-        }
-      }).catch(err => {
-        log(`❌ Part ${p} エラー: ${err.message}`, 'error');
-      });
-    }
-
-    // ===== 過去分析 =====
-    async function runAnalysis() {
-      const fileInput  = document.getElementById('past-file');
-      const textInput  = document.getElementById('past-text').value;
-      const agendaText = document.getElementById('agenda-input-analyze').value;
-      const meetingType = document.getElementById('meeting-type-select').value;
-      const btn = document.getElementById('analyzeBtn');
-
-      if (!fileInput.files[0] && !textInput.trim()) {
-        alert('分析対象のファイル（過去の議事録）を選択してください。');
-        return;
-      }
-
-      btn.disabled = true;
-      btn.innerText = '⏳ 経営視点で分析中...';
-      log(`分析を開始しました (${meetingType})...`);
-
-      try {
-        let fileData = null;
-        if (fileInput.files[0]) {
-          const f = fileInput.files[0];
-          const base64 = await fileToBase64(f);
-          fileData = { base64, mimeType: f.type, fileName: f.name };
-        }
-
-        const res = await callGAS('analyzePastMinutes', {
-          fileData,
-          inputText: textInput,
-          agendaText,
-          meetingType
-        });
-
-        log(`✅ レポート作成完了: ${res.name}`, 'success');
-        const link = document.getElementById('analyzed-link');
-        link.href     = res.url;
-        link.innerText = res.name;
-        document.getElementById('analyze-link-container').style.display = 'block';
-      } catch (err) {
-        log(`❌ 分析エラー: ${err.message}`, 'error');
-        alert('エラー: ' + err.message);
-      } finally {
-        btn.innerText  = '⚡ 分析してレポート作成';
-        btn.disabled   = false;
+        // 最終要約の生成
+        log('✨ 最終要約を生成中...');
+        callGAS('finalizeSummary', { targetDocId: minId })
+          .then(msg => {
+            log(`✅ まとめテーブル更新: ${msg}`, 'success');
+          })
+          .catch(err => {
+            log(`⚠️ まとめ生成失敗: ${err.message}`, 'error');
+          });
       }
     }
 
-    // ===== タイマー =====
     function startTimer() {
       let start = Date.now();
       timerInterval = setInterval(() => {
@@ -998,60 +1097,29 @@
       }, 1000);
     }
 
-    // ===== チェックリスト更新 =====
     function updateChecklist(data) {
       if (!data || !data.topics) return;
       const mapping = {
-        goal: 'chk-goal', status: 'chk-status', proscons: 'chk-proscons',
-        constraints: 'chk-constraints', decision: 'chk-decision',
-        schedule: 'chk-schedule', deadline: 'chk-deadline', concrete: 'chk-concrete'
+        'goal':        'chk-goal',
+        'status':      'chk-status',
+        'proscons':    'chk-proscons',
+        'constraints': 'chk-constraints',
+        'decision':    'chk-decision',
+        'schedule':    'chk-schedule',
+        'deadline':    'chk-deadline',
+        'concrete':    'chk-concrete'
       };
       data.topics.forEach(topic => {
-        const el = document.getElementById(mapping[topic]);
-        if (el) {
-          el.checked = true;
-          el.parentElement.style.fontWeight = 'bold';
-          el.parentElement.style.color = '#d35400';
+        const id = mapping[topic];
+        if (id) {
+          const el = document.getElementById(id);
+          if (el) {
+            el.checked = true;
+            el.parentElement.style.fontWeight = 'bold';
+            el.parentElement.style.color = '#d35400';
+          }
         }
       });
-    }
-
-    // ===== GIS初期化 =====
-    window.addEventListener('load', function() {
-      if (typeof google !== 'undefined' && google.accounts) {
-        google.accounts.id.initialize({
-          client_id: CONFIG.GOOGLE_CLIENT_ID,
-          callback: window.handleCredentialResponse,
-          auto_select: false,
-        });
-        google.accounts.id.renderButton(
-          document.querySelector('.g_id_signin'),
-          { theme: 'outline', size: 'large', locale: 'ja' }
-        );
-      }
-    });
-
-    // ===== 初期化（ログイン後に呼ばれる） =====
-    function initApp() {
-      showLoading('システム準備中...');
-      updateTheme('store_manager');
-
-      // ボタンイベント登録
-      document.getElementById('createBtn').onclick  = triggerCreateNew;
-      document.getElementById('resumeBtn').onclick  = handleResumeClick;
-      document.getElementById('startBtn').onclick   = startRecording;
-      document.getElementById('splitBtn').onclick   = triggerSplit;
-      document.getElementById('stopBtn').onclick    = stopRecording;
-      document.getElementById('analyzeBtn').onclick = runAnalysis;
-
-      // 次第ファイルローダー
-      setupAgendaLoader('agenda-file-record',  'agenda-status-record',  'agenda-input-record');
-      setupAgendaLoader('agenda-file-analyze', 'agenda-status-analyze', 'agenda-input-analyze');
-
-      setTimeout(() => {
-        hideLoading();
-        log('システム準備完了。録音を開始できます。', 'success');
-      }, 1500);
     }
   </script>
 </body>
