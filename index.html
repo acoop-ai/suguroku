@@ -341,6 +341,29 @@
     }
 
     /* =============================
+       録音中警告バナー
+       ============================= */
+    #rec-warning-banner {
+      display: none;
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      background: #e74c3c;
+      color: white;
+      text-align: center;
+      padding: 10px 16px;
+      font-weight: bold;
+      font-size: 0.9em;
+      z-index: 9500;
+      letter-spacing: 0.04em;
+      animation: rec-blink 2.5s ease-in-out infinite;
+    }
+
+    @keyframes rec-blink {
+      0%, 100% { opacity: 1; }
+      50%       { opacity: 0.7; }
+    }
+
+    /* =============================
        ログイン画面
        ============================= */
     #login-screen {
@@ -414,6 +437,11 @@
 </head>
 
 <body>
+
+  <!-- 録音中警告バナー（録音開始で表示） -->
+  <div id="rec-warning-banner">
+    🔴 録音中 — このタブを閉じないでください &nbsp;|&nbsp; 終了する場合は「⏹️ 終了」ボタンを押してください
+  </div>
 
   <!-- ========== ログイン画面 ========== -->
   <div id="login-screen">
@@ -1016,6 +1044,7 @@
       document.getElementById('splitBtn').disabled = false;
       document.getElementById('stopBtn').disabled  = false;
       log('録音開始', 'success');
+      showRecBanner();  // 録音中バナーを表示
 
       autoSplitTimer = setTimeout(() => { log('自動分割送信'); triggerSplit(); }, AUTO_SEND_MS);
     }
@@ -1026,6 +1055,52 @@
     }
 
     let shouldRestart = false;
+
+    // 録音状態チェック
+    function isRecording() {
+      return mediaRecorder && mediaRecorder.state === 'recording';
+    }
+
+    // 録音中バナー表示／非表示
+    function showRecBanner() {
+      document.getElementById('rec-warning-banner').style.display = 'block';
+      // バナー分のスペースを確保
+      const mainApp = document.getElementById('main-app');
+      if (mainApp) mainApp.style.paddingTop = '44px';
+    }
+    function hideRecBanner() {
+      document.getElementById('rec-warning-banner').style.display = 'none';
+      const mainApp = document.getElementById('main-app');
+      if (mainApp) mainApp.style.paddingTop = '0';
+    }
+
+    // ① 録音中の誤閉じ防止（ブラウザ標準ダイアログを表示）
+    window.addEventListener('beforeunload', (e) => {
+      if (isRecording()) {
+        e.preventDefault();
+        // モダンブラウザは独自メッセージを無視して標準文を表示するが念のため設定
+        e.returnValue = '⚠️ 録音中です！閉じると直前の録音データが失われます。';
+        return e.returnValue;
+      }
+    });
+
+    // ② ページが閉じられた場合 → sendBeacon でfinalizeSummaryを送信
+    //    （既に送信済みの音声チャンク分だけでも要約を実行する）
+    window.addEventListener('pagehide', () => {
+      if (!minId || !currentIdToken) return;
+      if (!isRecording()) return;
+      const body = JSON.stringify({
+        action:      'finalizeSummary',
+        idToken:     currentIdToken,
+        targetDocId: minId
+      });
+      // sendBeacon はページアンロード後も確実に送信される
+      navigator.sendBeacon(
+        CONFIG.GAS_URL,
+        new Blob([body], { type: 'text/plain;charset=UTF-8' })
+      );
+    });
+
     function triggerSplit() {
       shouldRestart = true;
       if (mediaRecorder && mediaRecorder.state !== 'inactive') mediaRecorder.stop();
@@ -1073,6 +1148,7 @@
         document.getElementById('startBtn').disabled = false;
         document.getElementById('stopBtn').disabled  = true;
         document.getElementById('splitBtn').disabled = true;
+        hideRecBanner();  // 録音終了でバナーを消す
         log('録音終了');
 
         // 最終要約の生成
