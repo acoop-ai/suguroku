@@ -569,16 +569,14 @@
         </div>
       </div>
 
-      <!-- Mode 3: Embedded Manual -->
+      <!-- Mode 3: Manual Page Launcher -->
       <div id="mode-manual" class="mode-content">
-        <div class="control-panel" style="border-color:#3498db;">
-          <label style="color:#2980b9;">📘 スグロク ユーザーマニュアル（埋め込み表示）</label>
-          <div class="pdf-note" style="color:#2980b9; background:#eaf2f8; border-color:#d6eaf8;">
-            この画面内で使い方を確認できます（外部リンク遷移なし）。
+        <div class="control-panel" style="border-color:#3498db; text-align:center;">
+          <label style="color:#2980b9; text-align:left;">📘 スグロク ユーザーマニュアル</label>
+          <div class="pdf-note" style="color:#2980b9; background:#eaf2f8; border-color:#d6eaf8; text-align:left;">
+            マニュアルはアプリ内データから別ページ表示します（外部リンクではありません）。
           </div>
-          <div class="manual-wrap">
-            <iframe id="manual-frame" class="manual-frame" title="スグロク ユーザーマニュアル"></iframe>
-          </div>
+          <button id="openManualBtn" style="background:#2980b9; max-width:320px; margin:10px auto 0; display:block;">📘 マニュアルを別ページで開く</button>
         </div>
       </div>
 
@@ -694,10 +692,15 @@
     //  タブ切替
     // ============================================================
     function switchTab(mode) {
+      if (mode === 'manual') {
+        openManualInNewPage();
+        mode = 'record';
+      }
+
       document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
       document.querySelectorAll('.mode-content').forEach(c => c.classList.remove('active'));
 
-      const map = { record: 1, analyze: 2, manual: 3 };
+      const map = { record: 1, analyze: 2 };
       const tabIndex = map[mode] || 1;
       const modeEl = document.getElementById(`mode-${mode}`) || document.getElementById('mode-record');
 
@@ -720,10 +723,54 @@
     function openModal()  { document.getElementById('installModal').style.display = 'flex'; }
     function closeModal() { document.getElementById('installModal').style.display = 'none'; }
 
-    function loadEmbeddedManual() {
-      const frame = document.getElementById('manual-frame');
-      if (!frame) return;
-      frame.src = `data:text/html;charset=utf-8;base64,${EMBEDDED_MANUAL_B64}`;
+    function decodeBase64Utf8(b64) {
+      const binary = atob(b64);
+      const bytes = Uint8Array.from(binary, c => c.charCodeAt(0));
+      return new TextDecoder().decode(bytes);
+    }
+
+    function openManualInNewPage() {
+      try {
+        const html = decodeBase64Utf8(EMBEDDED_MANUAL_B64);
+        const blob = new Blob([html], { type: 'text/html;charset=utf-8' });
+        const url = URL.createObjectURL(blob);
+        window.open(url, '_blank', 'noopener,noreferrer');
+        setTimeout(() => URL.revokeObjectURL(url), 60000);
+      } catch (e) {
+        alert('マニュアルの表示に失敗しました: ' + e.message);
+      }
+    }
+
+    function setupMobileRefreshGuard() {
+      const ua = navigator.userAgent || '';
+      const isMobile = /Android|iPhone|iPad|iPod/i.test(ua);
+      if (!isMobile) return;
+
+      document.documentElement.style.overscrollBehaviorY = 'none';
+      document.body.style.overscrollBehaviorY = 'none';
+
+      let startY = 0;
+      let handled = false;
+
+      window.addEventListener('touchstart', (e) => {
+        if (e.touches.length !== 1) return;
+        startY = e.touches[0].clientY;
+        handled = false;
+      }, { passive: true });
+
+      window.addEventListener('touchmove', (e) => {
+        if (e.touches.length !== 1) return;
+        const delta = e.touches[0].clientY - startY;
+        const atTop = window.scrollY <= 0;
+        if (atTop && delta > 70) {
+          e.preventDefault();
+          if (!handled) {
+            handled = true;
+            const ok = confirm('ページを更新しますか？\n録音中は「キャンセル」を推奨します。');
+            if (ok) location.reload();
+          }
+        }
+      }, { passive: false });
     }
 
     function showLoading(msg) {
@@ -978,7 +1025,7 @@
     document.addEventListener('DOMContentLoaded', () => {
       // テーマ初期化（ログイン前でも設定）
       updateTheme('store_manager');
-      loadEmbeddedManual();
+      setupMobileRefreshGuard();
 
       // Google Sign-In ボタンを描画
       // ※ GIS スクリプトがロードされてから実行する必要があるため
@@ -1022,6 +1069,9 @@
 
       const analyzeBtn = document.getElementById('analyzeBtn');
       if (analyzeBtn) analyzeBtn.onclick = runAnalysis;
+
+      const openManualBtn = document.getElementById('openManualBtn');
+      if (openManualBtn) openManualBtn.onclick = openManualInNewPage;
 
       // 次第ファイルローダーを両モードに設定
       setupAgendaLoader('agenda-file-record',  'agenda-status-record',  'agenda-input-record');
@@ -1225,6 +1275,9 @@
 </body>
 
 </html>
+
+
+
 
 
 
